@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.exception.model.*;
 
 /**
- * Контроллер отлова ошибок.
+ * Контроллер ошибок.
  */
 @RestControllerAdvice
 @Slf4j
