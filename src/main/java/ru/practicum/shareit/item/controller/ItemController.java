@@ -1,12 +1,15 @@
 package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.item.service.ItemServiceImpl;
+import ru.practicum.shareit.validation.Create;
+import ru.practicum.shareit.validation.Update;
 
-import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -19,14 +22,20 @@ public class ItemController {
     /**
      * Предоставляет доступ к сервису работы с вещами.
      */
-    public final ItemService itemService;
+    private final ItemServiceImpl itemService;
+    /**
+     * Константа заголовка.
+     */
+    private static final String id = "X-Sharer-User-Id";
 
     /**
      * Обрабатывает запрос на регистрацию и добавление.
      */
     @PostMapping
-    public ItemDto add(@Valid @RequestBody ItemDto itemDto,
-                       @RequestHeader("X-Sharer-User-Id") int userId) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ItemDto add(@Validated(Create.class)
+                       @RequestBody ItemDto itemDto,
+                       @RequestHeader(id) int userId) {
         return itemService.add(itemDto, userId);
     }
 
@@ -34,9 +43,10 @@ public class ItemController {
      * Обрабатывает запрос на обновление данных.
      */
     @PatchMapping("/{itemId}")
-    public ItemDto update(@RequestBody ItemDto itemDto,
+    public ItemDto update(@Validated(Update.class)
+                          @RequestBody ItemDto itemDto,
                           @PathVariable int itemId,
-                          @RequestHeader("X-Sharer-User-Id") int userId) {
+                          @RequestHeader(id) int userId) {
         return itemService.update(itemDto, itemId, userId);
     }
 
@@ -45,7 +55,7 @@ public class ItemController {
      */
     @GetMapping("/{itemId}")
     public ItemDto get(@PathVariable int itemId,
-                       @RequestHeader("X-Sharer-User-Id") int userId) {
+                       @RequestHeader(id) int userId) {
         return itemService.getById(itemId, userId);
     }
 
@@ -54,7 +64,7 @@ public class ItemController {
      */
     @GetMapping("/search")
     public List<ItemDto> search(@RequestParam String text,
-                                @RequestHeader("X-Sharer-User-Id") int userId) {
+                                @RequestHeader(id) int userId) {
         return itemService.search(text, userId);
     }
 
@@ -62,7 +72,7 @@ public class ItemController {
      * Обрабатывает запросы на предоставления списка вещей пользователя.
      */
     @GetMapping
-    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") int userId) {
+    public List<ItemDto> getAll(@RequestHeader(id) int userId) {
         return itemService.getAll(userId);
     }
 }

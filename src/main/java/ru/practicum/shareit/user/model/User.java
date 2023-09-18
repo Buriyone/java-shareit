@@ -3,8 +3,6 @@ package ru.practicum.shareit.user.model;
 import lombok.Builder;
 import lombok.Data;
 
-import javax.validation.constraints.Email;
-
 /**
  * Класс пользователя.
  */
@@ -22,6 +20,5 @@ public class User {
     /**
      * Электронная почта.
      */
-    @Email(message = "Email введен некорректно.")
     private String email;
 }

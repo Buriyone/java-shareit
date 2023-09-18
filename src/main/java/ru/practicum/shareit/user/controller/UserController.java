@@ -1,11 +1,14 @@
 package ru.practicum.shareit.user.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserServiceImpl;
+import ru.practicum.shareit.validation.Create;
+import ru.practicum.shareit.validation.Update;
 
-import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -18,7 +21,7 @@ public class UserController {
     /**
      * Предоставляет доступ к сервису работы с пользователями.
      */
-    public final UserService userService;
+    private final UserServiceImpl userService;
 
     /**
      * Обрабатывает запрос на получение списка всех пользователей.
@@ -32,7 +35,9 @@ public class UserController {
      * Обрабатывает запрос на регистрацию и добавление пользователя.
      */
     @PostMapping
-    public UserDto add(@Valid @RequestBody UserDto userDto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDto add(@Validated(Create.class)
+                       @RequestBody UserDto userDto) {
         return userService.add(userDto);
     }
 
@@ -40,7 +45,8 @@ public class UserController {
      * Обрабатывает запрос на обновление данных пользователя.
      */
     @PatchMapping("/{userId}")
-    public UserDto update(@RequestBody UserDto userDto,
+    public UserDto update(@Validated(Update.class)
+                          @RequestBody UserDto userDto,
                           @PathVariable int userId) {
         return userService.update(userDto, userId);
     }
@@ -49,6 +55,7 @@ public class UserController {
      * Обрабатывает запросы удаления пользователя.
      */
     @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable int userId) {
         userService.delete(userId);
     }

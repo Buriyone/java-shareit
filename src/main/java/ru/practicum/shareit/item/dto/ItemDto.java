@@ -5,6 +5,7 @@ import lombok.Data;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.validation.Create;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -16,13 +17,11 @@ import javax.validation.constraints.NotNull;
 @Builder(toBuilder = true)
 public class ItemDto {
     private int id;
-    @NotNull(message = "Название не может отсутствовать.")
-    @NotBlank(message = "Название вещи не может быть пустым или содержать пробелы.")
+    @NotBlank(message = "Название вещи не может быть пустым или содержать пробелы.", groups = {Create.class})
     private String name;
-    @NotNull(message = "Описание не может отсутствовать.")
-    @NotBlank(message = "Описание вещи не может быть пустым или содержать пробелы.")
+    @NotBlank(message = "Описание вещи не может быть пустым или содержать пробелы.", groups = {Create.class})
     private String description;
-    @NotNull(message = "Статус не может отсутствовать.")
+    @NotNull(message = "Статус не может отсутствовать.", groups = {Create.class})
     private Boolean available;
     private User owner;
     private ItemRequest request;
