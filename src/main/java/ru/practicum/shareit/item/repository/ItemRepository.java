@@ -1,27 +1,19 @@
 package ru.practicum.shareit.item.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 
 /**
- * Интерфейс репозитория вещей.
+ * Хранилище для {@link Item}.
  */
+public interface ItemRepository extends JpaRepository<Item, Integer> {
+    List<Item> findItemByOwnerId(int id);
 
-public interface ItemRepository {
-    Item add(Item item);
-
-    Item update(Item item, int itemId);
-
-    void deleteAllItemByUserId(int id);
-
-    Item getById(int id);
-
-    List<Item> getAll(int userId);
-
-    Boolean itemChecker(int id);
-
-    Boolean itemByUserChecker(int itemId, int userId);
-
+    @Query(" select i from Item i " +
+            "where upper(i.name) like upper(concat('%', ?1, '%')) " +
+            " or upper(i.description) like upper(concat('%', ?1, '%'))")
     List<Item> search(String text);
 }

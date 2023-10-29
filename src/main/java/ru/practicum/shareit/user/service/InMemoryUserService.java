@@ -8,16 +8,14 @@ import java.util.List;
 /**
  * Интерфейс сервиса контроллера обработки запросов связанных с {@link User} и {@link UserDto}.
  */
-public interface UserService {
-    UserDto add(UserDto userDto);
+public interface InMemoryUserService {
+	UserDto add(UserDto userDto);
 
-    UserDto update(UserDto userDto, int id);
+	UserDto update(UserDto userDto, int id);
 
-    void delete(int id);
+	void delete(int id);
 
-    UserDto get(int id);
+	UserDto get(int id);
 
-    List<UserDto> getAll();
-
-    Boolean userChecker(int id);
+	List<UserDto> getAll();
 }

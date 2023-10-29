@@ -2,15 +2,15 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.model.ConflictException;
 import ru.practicum.shareit.exception.model.NotFoundException;
+import ru.practicum.shareit.exception.model.ValidationException;
+import ru.practicum.shareit.item.repository.InMemoryItemRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.repository.InMemoryUserRepository;
 
-import javax.transaction.Transactional;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,34 +18,38 @@ import static ru.practicum.shareit.user.mapper.UserMapper.toUser;
 import static ru.practicum.shareit.user.mapper.UserMapper.toUserDto;
 
 /**
- * Реализация сервиса {@link UserService}.
+ * Реализация сервиса {@link InMemoryUserService}
  */
-@Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserServiceImpl implements UserService {
+public class InMemoryUserServiceImpl implements InMemoryUserService {
     /**
-     * Предоставляет доступ к хранилищу для {@link User}.
+     * Предоставляет доступ к хранилищу пользователей.
      */
-    private final UserRepository userRepository;
+    private final InMemoryUserRepository userRepository;
+    /**
+     * Предоставляет доступ к хранилищу вещей.
+     */
+    private final InMemoryItemRepository itemRepository;
 
     /**
      * Метод регистрации и добавления пользователя.
+     * Генерирует {@link ValidationException} если пользователь при регистрации не указал имя или почту.
      * Генерирует {@link ConflictException} если почта уже занята.
      * @param userDto Dto-объект пользователя.
      * @return возвращает зарегистрированного пользователя
      * с присвоенным уникальны идентификатором в формате {@link UserDto}
      */
     @Override
-    @Transactional
     public UserDto add(UserDto userDto) {
         log.info("Поступил запрос на регистрацию и добавление пользователя.");
-        try {
-            User user = userRepository.save(toUser(userDto));
-            log.info("Пользователь {} успешно зарегистрирован и добавлен c id: {}", user.getName(), user.getId());
-            return toUserDto(user);
-        } catch (Exception e) {
+        if (userDto.getName() == null || userDto.getName().isBlank() || userDto.getEmail() == null) {
+            throw new ValidationException("Имя и электронная почта не могут отсутствовать или содержать пробелы.");
+        } else if (userRepository.emailValidation(userDto.getEmail()).equals(true)) {
             throw new ConflictException("Электронная почта уже занята.");
+        } else {
+            log.info("Пользователь успешно зарегистрирован и добавлен.");
+            return toUserDto(userRepository.add(toUser(userDto)));
         }
     }
 
@@ -58,31 +62,17 @@ public class UserServiceImpl implements UserService {
      * @return возвращает пользователя с обновленными данными в формате {@link UserDto}.
      */
     @Override
-    @Transactional
     public UserDto update(UserDto userDto, int id) {
         log.info("Поступил запрос на обновление данных пользователя.");
-        return userRepository.findById(id).stream()
-                .peek(user -> {
-                    if (userDto.getName() != null && !userDto.getName().isBlank()) {
-                        user.setName(userDto.getName());
-                    }
-                    if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
-                        if (userRepository.findByEmailContainingIgnoreCase(userDto.getEmail()).isPresent()
-                                && !user.getEmail().equals(userDto.getEmail())) {
-                            throw new ConflictException("Электронная почта уже занята.");
-                        } else {
-                            user.setEmail(userDto.getEmail());
-                        }
-                    }
-                    System.out.println("\n");
-                    System.out.println(user);
-                    System.out.println("\n");
-                    userRepository.save(user);
-                    log.info("Данные пользователя успешно обновлены.");
-                })
-                .map(UserMapper::toUserDto)
-                .findFirst().orElseThrow(()
-                        -> new NotFoundException(String.format("Пользователь с id: %d не найден.", id)));
+        if (userRepository.userChecker(id).equals(false)) {
+            throw new NotFoundException(String.format("Пользователь с id: %d не найден.", id));
+        } else if (userRepository.emailAvailability(userDto.getEmail(), id).equals(true)) {
+            throw new ConflictException("Электронная почта уже занята.");
+        } else {
+            userDto.setId(id);
+            log.info("Данные пользователя успешно обновлены.");
+            return toUserDto(userRepository.update(toUser(userDto)));
+        }
     }
 
     /**
@@ -92,13 +82,14 @@ public class UserServiceImpl implements UserService {
      * @param id уникальный идентификатор пользователя подлежащего удалению.
      */
     @Override
-    @Transactional
     public void delete(int id) {
         log.info("Поступил запрос на удаление пользователя.");
-        if (userChecker(id)) {
-            userRepository.deleteById(id);
-        } else {
+        if (userRepository.userChecker(id).equals(false)) {
             throw new NotFoundException(String.format("Пользователь с id: %d не найден.", id));
+        } else {
+            log.info("Пользователь успешно удален.");
+            itemRepository.deleteAllItemByUserId(id);
+            userRepository.delete(id);
         }
     }
 
@@ -111,8 +102,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto get(int id) {
         log.info("Поступил запрос на предоставление пользователя по уникальному идентификатору.");
-        return toUserDto(userRepository.findById(id).orElseThrow(()
-                -> new NotFoundException(String.format("Пользователь с id: %d не найден.", id))));
+        if (userRepository.userChecker(id).equals(false)) {
+            throw new NotFoundException(String.format("Пользователь с id: %d не найден.", id));
+        } else {
+            log.info("Пользователь успешно предоставлены.");
+            return toUserDto(userRepository.getById(id));
+        }
     }
 
     /**
@@ -121,18 +116,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public List<UserDto> getAll() {
-        return userRepository.findAll().stream()
+        log.info("Поступил запрос на предоставление списка всех пользователей.");
+        log.info("Список пользователей успешно предоставлен.");
+        return userRepository.getAll().stream()
                 .map(UserMapper::toUserDto)
+                .sorted(Comparator.comparing(UserDto::getId))
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Сервисный метод проверки наличия зарегистрированного пользователя.
-     * @param id уникальный идентификатор пользователя.
-     * @return возвращает булевое значение True - если пользователь обнаружен, False - если пользователь не обнаружен.
-     */
-    @Override
-    public Boolean userChecker(int id) {
-        return userRepository.existsById(id);
     }
 }

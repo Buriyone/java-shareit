@@ -1,15 +1,14 @@
 package ru.practicum.shareit.user.repository;
 
-import org.springframework.stereotype.Component;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.*;
 
 /**
- * Класс-хранилище для {@link User} реализующий интерфейс {@link UserRepository}.
+ * Класс-хранилище для {@link User} реализующий интерфейс {@link InMemoryUserRepository}.
  */
-@Component
-public class InMemoryUserRepositoryImpl implements UserRepository {
+
+public class InMemoryUserRepositoryImpl implements InMemoryUserRepository {
     /**
      * Хранение пользователей реализовано в хэш-таблице,
      * ключом является уникальный идентификатор, а значением пользователь.
