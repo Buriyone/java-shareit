@@ -7,8 +7,12 @@ import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.assistant.Status;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.validation.Create;
 
 import javax.persistence.*;
+import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 
 /**
@@ -31,17 +35,22 @@ public class Booking {
      * Дата и время начала бронирования.
      */
     @Column(name = "start_date")
+    @NotNull(message = "Время начала бронирования не может отсутствовать.", groups = {Create.class})
+    @FutureOrPresent(message = "Время начала бронирования не может быть в прошлом.", groups = {Create.class})
     private LocalDateTime start;
     /**
      * Дата и время окончания бронирования.
      */
     @Column(name = "end_date")
+    @NotNull(message = "Время окончания бронирования не может отсутствовать.", groups = {Create.class})
+    @FutureOrPresent(message = "Время окончания бронирования не может быть в прошлом.", groups = {Create.class})
     private LocalDateTime end;
     /**
      * Вещь, которую бронирует пользователь.
      */
     @ManyToOne
     @JoinColumn(name = "item_id")
+    @NotNull(message = "Вещь для бронирования не может отсутствовать.", groups = {Create.class})
     private Item item;
     /**
      * Пользователь, который осуществляет бронирование.

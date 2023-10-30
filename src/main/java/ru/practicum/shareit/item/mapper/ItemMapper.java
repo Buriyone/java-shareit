@@ -1,16 +1,24 @@
 package ru.practicum.shareit.item.mapper;
 
+import lombok.experimental.UtilityClass;
+import org.mapstruct.Mapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 /**
  * Маппер для работы с {@link Item} и {@link ItemDto}.
  */
-public class ItemMapper {
+@Mapper(componentModel = "spring")
+public interface ItemMapper {
+    Item toItem(ItemDto itemDto);
+    ItemDto toItemDto(Item item);
+
+
+    /*
     /**
      * Конвертирует {@link Item} в {@link ItemDto}.
-     */
-    public static ItemDto toItemDto(Item item) {
+     /*
+    public ItemDto toItemDto(Item item) {
         return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -19,11 +27,14 @@ public class ItemMapper {
                 .owner(item.getOwner())
                 .build();
     }
-
+    */
+/*
     /**
      * Конвертирует {@link ItemDto} в {@link Item}.
      */
-    public static Item toItem(ItemDto itemDto) {
+    /*
+    /*
+    public Item toItem(ItemDto itemDto) {
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
@@ -33,4 +44,6 @@ public class ItemMapper {
                 .request(itemDto.getRequest())
                 .build();
     }
+
+     */
 }

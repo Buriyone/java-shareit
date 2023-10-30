@@ -14,20 +14,22 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.user.mapper.UserMapper.toUser;
-import static ru.practicum.shareit.user.mapper.UserMapper.toUserDto;
-
 /**
  * Реализация сервиса {@link UserService}.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class UserServiceImpl implements UserService {
     /**
      * Предоставляет доступ к хранилищу для {@link User}.
      */
     private final UserRepository userRepository;
+    /**
+     * Маппер для конвертирования сущностей.
+     */
+    private final UserMapper mapper;
 
     /**
      * Метод регистрации и добавления пользователя.
@@ -41,9 +43,9 @@ public class UserServiceImpl implements UserService {
     public UserDto add(UserDto userDto) {
         log.info("Поступил запрос на регистрацию и добавление пользователя.");
         try {
-            User user = userRepository.save(toUser(userDto));
+            User user = userRepository.save(mapper.toUser(userDto));
             log.info("Пользователь {} успешно зарегистрирован и добавлен c id: {}", user.getName(), user.getId());
-            return toUserDto(user);
+            return mapper.toUserDto(user);
         } catch (Exception e) {
             throw new ConflictException("Электронная почта уже занята.");
         }
@@ -74,13 +76,10 @@ public class UserServiceImpl implements UserService {
                             user.setEmail(userDto.getEmail());
                         }
                     }
-                    System.out.println("\n");
-                    System.out.println(user);
-                    System.out.println("\n");
                     userRepository.save(user);
                     log.info("Данные пользователя успешно обновлены.");
                 })
-                .map(UserMapper::toUserDto)
+                .map(mapper::toUserDto)
                 .findFirst().orElseThrow(()
                         -> new NotFoundException(String.format("Пользователь с id: %d не найден.", id)));
     }
@@ -111,7 +110,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto get(int id) {
         log.info("Поступил запрос на предоставление пользователя по уникальному идентификатору.");
-        return toUserDto(userRepository.findById(id).orElseThrow(()
+        return mapper.toUserDto(userRepository.findById(id).orElseThrow(()
                 -> new NotFoundException(String.format("Пользователь с id: %d не найден.", id))));
     }
 
@@ -122,7 +121,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> getAll() {
         return userRepository.findAll().stream()
-                .map(UserMapper::toUserDto)
+                .map(mapper::toUserDto)
                 .collect(Collectors.toList());
     }
 

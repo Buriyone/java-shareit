@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.assistant.State;
 import ru.practicum.shareit.booking.assistant.Status;
@@ -21,12 +22,8 @@ import ru.practicum.shareit.user.service.UserService;
 import javax.transaction.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static ru.practicum.shareit.booking.mapper.BookingMapper.toBooking;
-import static ru.practicum.shareit.booking.mapper.BookingMapper.toBookingDto;
 
 /**
  * Реализация интерфейса {@link BookingService}.
@@ -34,6 +31,7 @@ import static ru.practicum.shareit.booking.mapper.BookingMapper.toBookingDto;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class BookingServiceImpl implements BookingService {
     /**
      * Предоставляет доступ к хранилищу {@link Booking}.
@@ -51,6 +49,10 @@ public class BookingServiceImpl implements BookingService {
      * Предоставляет доступ к сервису для работы с {@link User}.
      */
     private final UserService userService;
+    /**
+     * Маппер для конвертирования сущностей.
+     */
+    private final BookingMapper bookingMapper;
 
     /**
      * Метод регистрирует и сохраняет бронирование в {@link BookingRepository}.
@@ -75,8 +77,6 @@ public class BookingServiceImpl implements BookingService {
                         throw new ValidationException("Вещь не доступна для бронирования.");
                     } else if (item.getOwner().getId() == userId) {
                         throw new NotFoundException("Владелец вещи не может оформлять бронирование.");
-                        // А должен быть ForbiddenException с кодом ошибки 403 ведь тут идет отказ в доступе к действию
-                        // или ValidationException с кодом 400. НО УЖ ТОЧНО НЕ 404, кого мы тут не нашли непонятно.
                     }
                 })
                 .findFirst().orElseThrow(() -> new NotFoundException("Вещь не обнаружена.")));
@@ -85,7 +85,7 @@ public class BookingServiceImpl implements BookingService {
                         .format("Пользователь c id: %d не обнаружен.", userId))));
         bookingDto.setStatus(Status.WAITING);
         log.info("Бронирование зарегистрировано.");
-        return toBookingDto(bookingRepository.save(toBooking(bookingDto)));
+        return bookingMapper.toBookingDto(bookingRepository.save(bookingMapper.toBooking(bookingDto)));
     }
 
     /**
@@ -99,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
      */
     @Override
     @Transactional
-    public BookingDto approveder(int bookingId, boolean approve, int userId) {
+    public BookingDto statusAppropriator(int bookingId, boolean approve, int userId) {
         log.info("Поступил запрос на обработку статуса бронирования пользователем с id: {}.", userId);
         return bookingRepository.findById(bookingId).stream()
                 .peek(booking -> {
@@ -108,8 +108,6 @@ public class BookingServiceImpl implements BookingService {
                     } else if (booking.getItem().getOwner().getId() != userId) {
                         throw new NotFoundException(String
                                 .format("Вещь не принадлежит пользователю с id: %d.", userId));
-                        //А должен быть ForbiddenException с кодом ошибки 403 ведь тут идет отказ в доступе
-                        // к внесению изменений на которые нет прав.
                     } else if (!booking.getStatus().equals(Status.WAITING)) {
                         throw new ValidationException("Бронирование уже было обработано.");
                     } else {
@@ -122,7 +120,7 @@ public class BookingServiceImpl implements BookingService {
                         log.info("Бронирование подтверждено.");
                     }
                 })
-                .map(BookingMapper::toBookingDto)
+                .map(bookingMapper::toBookingDto)
                 .findFirst().orElseThrow(() -> new NotFoundException("Бронирование не обнаружено."));
     }
 
@@ -145,12 +143,10 @@ public class BookingServiceImpl implements BookingService {
                             && booking.getItem().getOwner().getId() != userId) {
                         throw new NotFoundException(String.format("Пользователь с id: %d не является автором " +
                                 "бронирования или владельцем вещи.", userId));
-                        //А должен быть ForbiddenException с кодом ошибки 403 ведь тут идет отказ в доступе
-                        // к внесению изменений на которые нет прав.
                     }
                     log.info("Данные о бронировании c id: {} предоставлены пользователю с id: {}", bookingId, userId);
                 })
-                .map(BookingMapper::toBookingDto)
+                .map(bookingMapper::toBookingDto)
                 .findFirst().orElseThrow(() -> new NotFoundException("Бронирование не обнаружено."));
     }
 
@@ -173,19 +169,23 @@ public class BookingServiceImpl implements BookingService {
                 switch (State.valueOf(param)) {
                     case CURRENT:
                         return converter(bookingRepository.findBookingByBookerIdAndStartIsBeforeAndEndIsAfter(userId,
-                                LocalDateTime.now(), LocalDateTime.now()));
+                                LocalDateTime.now(), LocalDateTime.now(),
+                                Sort.by(Sort.Direction.DESC, "start")));
                     case PAST:
-                        return converter(bookingRepository
-                                .findBookingByBookerIdAndEndIsBefore(userId, LocalDateTime.now()));
+                        return converter(bookingRepository.findBookingByBookerIdAndEndIsBefore(userId,
+                                LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
                     case FUTURE:
-                        return converter(bookingRepository
-                                .findBookingByBookerIdAndStartIsAfter(userId, LocalDateTime.now()));
+                        return converter(bookingRepository.findBookingByBookerIdAndStartIsAfter(userId,
+                                        LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
                     case WAITING:
-                        return converter(bookingRepository.findBookingByBookerIdAndStatus(userId, Status.WAITING));
+                        return converter(bookingRepository.findBookingByBookerIdAndStatus(userId,
+                                Status.WAITING, Sort.by(Sort.Direction.DESC, "start")));
                     case REJECTED:
-                        return converter(bookingRepository.findBookingByBookerIdAndStatus(userId, Status.REJECTED));
+                        return converter(bookingRepository.findBookingByBookerIdAndStatus(userId,
+                                Status.REJECTED, Sort.by(Sort.Direction.DESC, "start")));
                     default:
-                        return converter(bookingRepository.findBookingByBookerId(userId));
+                        return converter(bookingRepository.findBookingByBookerId(userId,
+                                Sort.by(Sort.Direction.DESC, "start")));
                 }
             } catch (IllegalArgumentException e) {
                 throw new StateException("Unknown state: UNSUPPORTED_STATUS");
@@ -212,19 +212,23 @@ public class BookingServiceImpl implements BookingService {
                 switch (State.valueOf(param)) {
                     case CURRENT:
                         return converter(bookingRepository.findBookingByItemOwnerIdAndStartIsBeforeAndEndIsAfter(userId,
-                                LocalDateTime.now(), LocalDateTime.now()));
+                                LocalDateTime.now(), LocalDateTime.now(),
+                                Sort.by(Sort.Direction.DESC, "start")));
                     case PAST:
                         return converter(bookingRepository.findBookingByItemOwnerIdAndEndIsBefore(userId,
-                                LocalDateTime.now()));
+                                LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
                     case FUTURE:
                         return converter(bookingRepository.findBookingByItemOwnerIdAndStartIsAfter(userId,
-                                LocalDateTime.now()));
+                                LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
                     case WAITING:
-                        return converter(bookingRepository.findBookingByItemOwnerIdAndStatus(userId, Status.WAITING));
+                        return converter(bookingRepository.findBookingByItemOwnerIdAndStatus(userId,
+                                Status.WAITING, Sort.by(Sort.Direction.DESC, "start")));
                     case REJECTED:
-                        return converter(bookingRepository.findBookingByItemOwnerIdAndStatus(userId, Status.REJECTED));
+                        return converter(bookingRepository.findBookingByItemOwnerIdAndStatus(userId,
+                                Status.REJECTED, Sort.by(Sort.Direction.DESC, "start")));
                     default:
-                        return converter(bookingRepository.findBookingByItemOwnerId(userId));
+                        return converter(bookingRepository.findBookingByItemOwnerId(userId,
+                                Sort.by(Sort.Direction.DESC, "start")));
                 }
             } catch (IllegalArgumentException e) {
                 throw new StateException("Unknown state: UNSUPPORTED_STATUS");
@@ -239,8 +243,7 @@ public class BookingServiceImpl implements BookingService {
      */
     private List<BookingDto> converter(List<Booking> list) {
         return list.stream()
-                .sorted(Comparator.comparing(Booking::getStart).reversed())
-                .map(BookingMapper::toBookingDto)
+                .map(bookingMapper::toBookingDto)
                 .collect(Collectors.toList());
     }
 }

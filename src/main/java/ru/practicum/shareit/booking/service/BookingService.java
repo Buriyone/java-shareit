@@ -11,7 +11,7 @@ import ru.practicum.shareit.booking.model.Booking;
 public interface BookingService {
     BookingDto add(BookingDto bookingDto, int userId);
 
-    BookingDto approveder(int itemId, boolean approve, int userId);
+    BookingDto statusAppropriator(int itemId, boolean approve, int userId);
 
     BookingDto get(int bookingId, int userId);
 

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.assistant.Status;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.dto.CommentDtoIncreasedConfidential;
@@ -14,6 +15,7 @@ import ru.practicum.shareit.exception.model.ForbiddenException;
 import ru.practicum.shareit.exception.model.NotFoundException;
 import ru.practicum.shareit.exception.model.ValidationException;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.booking.model.Booking;
@@ -28,18 +30,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.comment.mapper.CommentMapper.*;
-import static ru.practicum.shareit.item.mapper.ItemMapper.toItem;
-import static ru.practicum.shareit.item.mapper.ItemMapper.toItemDto;
-import static ru.practicum.shareit.user.mapper.UserMapper.toUser;
-import static ru.practicum.shareit.booking.mapper.BookingMapper.toBookingDtoIncreasedConfidential;
-
 /**
  * Реализация сервиса {@link ItemService}.
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class ItemServiceImpl implements ItemService {
     /**
      * Предоставляет доступ к хранилищу для {@link Item}.
@@ -57,6 +54,13 @@ public class ItemServiceImpl implements ItemService {
      * Предоставляет доступ к хранилищу для {@link Comment}.
      */
     private final CommentRepository commentRepository;
+    /**
+     * Список мапперов для конвертирования сущностей.
+     */
+    private final ItemMapper itemMapper;
+    private final UserMapper userMapper;
+    private final CommentMapper commentMapper;
+    private final BookingMapper bookingMapper;
 
     /**
      * Сервисный метод регистрации и добавления.
@@ -74,9 +78,9 @@ public class ItemServiceImpl implements ItemService {
         if (userService.userChecker(userId).equals(false)) {
             throw new NotFoundException("Пользователь не обнаружен.");
         } else {
-            itemDto.setOwner(toUser(userService.get(userId)));
+            itemDto.setOwner(userMapper.toUser(userService.get(userId)));
             log.info("Вещь успешно зарегистрирована и добавлена");
-            return toItemDto(itemRepository.save(toItem(itemDto)));
+            return itemMapper.toItemDto(itemRepository.save(itemMapper.toItem(itemDto)));
         }
     }
 
@@ -121,7 +125,7 @@ public class ItemServiceImpl implements ItemService {
                         log.info("Вещь пользователя с id: {} успешно обновлена.", userId);
                     }
                 })
-                .map(ItemMapper::toItemDto)
+                .map(itemMapper::toItemDto)
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Вещь не обнаружена."));
     }
@@ -142,7 +146,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto getById(int itemId, int userId) {
         log.info("Поступил запрос пользователя с id: {} на поиск вещи c id: {}.", userId, itemId);
         return itemRepository.findById(itemId).stream()
-                .map(ItemMapper::toItemDto)
+                .map(itemMapper::toItemDto)
                 .peek(itemDto -> {
                     if (itemDto.getOwner().getId() == userId) {
                         bookingSetter(itemDto);
@@ -170,7 +174,7 @@ public class ItemServiceImpl implements ItemService {
         } else {
             return itemRepository.search(text).stream()
                     .filter(item -> item.getAvailable().equals(true))
-                    .map(ItemMapper::toItemDto)
+                    .map(itemMapper::toItemDto)
                     .collect(Collectors.toList());
         }
     }
@@ -185,7 +189,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> getAll(int userId) {
         log.info("Поступил запрос на предоставление вещей пользователя с id: {}.", userId);
         return itemRepository.findItemByOwnerId(userId).stream()
-                .map(ItemMapper::toItemDto)
+                .map(itemMapper::toItemDto)
                 .map(this::bookingSetter)
                 .map(this::commentSetter)
                 .collect(Collectors.toList());
@@ -210,10 +214,10 @@ public class ItemServiceImpl implements ItemService {
         bookingRepository.findTopByItemIdAndStartIsBeforeAndStatus(itemDto.getId(),
                 LocalDateTime.now(), Status.APPROVED,
                 Sort.by(Sort.Direction.DESC, "start"))
-                .ifPresent(booking -> itemDto.setLastBooking(toBookingDtoIncreasedConfidential(booking)));
+                .ifPresent(booking -> itemDto.setLastBooking(bookingMapper.toBookingDtoIncreasedConfidential(booking)));
         bookingRepository.findTopByItemIdAndStartIsAfterAndStatus(itemDto.getId(),
                 LocalDateTime.now(), Status.APPROVED, Sort.by("start"))
-                .ifPresent(booking -> itemDto.setNextBooking(toBookingDtoIncreasedConfidential(booking)));
+                .ifPresent(booking -> itemDto.setNextBooking(bookingMapper.toBookingDtoIncreasedConfidential(booking)));
         return itemDto;
     }
 
@@ -245,7 +249,8 @@ public class ItemServiceImpl implements ItemService {
                     }).findFirst().orElseThrow(() -> new ValidationException(String
                             .format("Пользователь с id: %d не брал в аренду вещь с id: %d", userId, itemId)));
             log.info("Комментарий успешно добавлен пользователем с id: {}", userId);
-            return toCommentDtoIncreasedConfidential(commentRepository.save(toComment(commentDto)));
+            return commentMapper.toCommentDtoIncreasedConfidential(commentRepository
+                    .save(commentMapper.toComment(commentDto)));
         }
     }
 
@@ -256,7 +261,7 @@ public class ItemServiceImpl implements ItemService {
      */
     private ItemDto commentSetter(ItemDto itemDto) {
         itemDto.setComments(commentRepository.findByItemId(itemDto.getId()).stream()
-                .map(CommentMapper::toCommentDtoIncreasedConfidential)
+                .map(commentMapper::toCommentDtoIncreasedConfidential)
                 .collect(Collectors.toList()));
         return itemDto;
     }

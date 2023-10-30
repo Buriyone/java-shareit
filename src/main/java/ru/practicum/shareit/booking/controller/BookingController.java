@@ -45,7 +45,7 @@ public class BookingController {
     public BookingDto approved(@PathVariable int bookingId,
                                @RequestParam boolean approved,
                                @RequestHeader(USER_ID) int userId) {
-        return bookingService.approveder(bookingId, approved, userId);
+        return bookingService.statusAppropriator(bookingId, approved, userId);
     }
 
     /**

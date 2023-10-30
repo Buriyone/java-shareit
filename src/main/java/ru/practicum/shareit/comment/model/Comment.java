@@ -6,8 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.validation.Create;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 /**
@@ -29,6 +31,7 @@ public class Comment {
     /**
      * Текст комментария.
      */
+    @NotBlank(message = "Текст комментария не может отсутствовать или быть пустым.", groups = {Create.class})
     private String text;
     /**
      * Вещь которую пользователь брал в аренду.

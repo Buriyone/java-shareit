@@ -82,9 +82,8 @@ public class ItemController {
      * Обрабатывает запросы на создание комментария.
      */
     @PostMapping("/{itemId}/comment")
-    //Тут должна быть аннотация @ResponseStatus(HttpStatus.CREATED) но тесты не пропускают, обязательно 200.
     public CommentDtoIncreasedConfidential addComment(@Validated(Create.class)
-                                 @RequestBody CommentDto commentDto,
+                                                      @RequestBody CommentDto commentDto,
                                                       @PathVariable int itemId,
                                                       @RequestHeader(USER_ID) int userId) {
         return itemService.addComment(itemId, userId, commentDto);
