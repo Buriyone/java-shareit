@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.service.UserServiceImpl;
+import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.validation.Create;
 import ru.practicum.shareit.validation.Update;
 
@@ -21,7 +21,7 @@ public class UserController {
     /**
      * Предоставляет доступ к сервису работы с пользователями.
      */
-    private final UserServiceImpl userService;
+    private final UserService userService;
 
     /**
      * Обрабатывает запрос на получение списка всех пользователей.

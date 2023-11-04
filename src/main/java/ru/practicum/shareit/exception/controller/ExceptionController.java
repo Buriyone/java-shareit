@@ -82,4 +82,17 @@ public class ExceptionController {
 				.description(exception.getMessage())
 				.build();
 	}
+
+	/**
+	 * Отлавливает ошибку {@link StateException}
+	 * @return возвращает сведения об ошибке.
+	 */
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public StateError stateException(final StateException exception) {
+		log.info("Ошибка параметра. {}", exception.getMessage());
+		return StateError.builder()
+				.error(exception.getMessage())
+				.build();
+	}
 }
