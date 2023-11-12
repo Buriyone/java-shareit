@@ -6,7 +6,7 @@ import ru.practicum.shareit.user.model.User;
 import java.util.List;
 
 /**
- * Интерфейс сервиса контроллера обработки запросов связанных с {@link User} и {@link UserDto}.
+ * Интерфейс сервиса для обработки запросов связанных с {@link User} и {@link UserDto}.
  */
 public interface UserService {
     UserDto add(UserDto userDto);

@@ -17,7 +17,7 @@ import javax.validation.constraints.Size;
 public class UserDto {
     private int id;
     @NotBlank(message = "Имя или логин не может быть пустым или содержать пробелы.", groups = {Create.class})
-    @Size(max = 255, message = "Имя превышает допустимое количество символов.")
+    @Size(max = 255, message = "Имя превышает допустимое количество символов.", groups = {Create.class})
     private String name;
     @NotBlank(message = "Электронная почта не может быть пустой или содержать пробелы.", groups = {Create.class})
     @Email(message = "Некорректно указана электронная почта.", groups = {Update.class, Create.class})

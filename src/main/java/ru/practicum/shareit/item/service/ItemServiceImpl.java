@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.assistant.Status;
@@ -14,9 +15,12 @@ import ru.practicum.shareit.comment.repository.CommentRepository;
 import ru.practicum.shareit.exception.model.ForbiddenException;
 import ru.practicum.shareit.exception.model.NotFoundException;
 import ru.practicum.shareit.exception.model.ValidationException;
+import ru.practicum.shareit.item.dto.ItemDtoIncreasedConfidential;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -29,6 +33,8 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static ru.practicum.shareit.validation.Validator.pageValidator;
 
 /**
  * Реализация сервиса {@link ItemService}.
@@ -55,6 +61,10 @@ public class ItemServiceImpl implements ItemService {
      */
     private final CommentRepository commentRepository;
     /**
+     * Предоставляет доступ к хранилищу для {@link ItemRequest}.
+     */
+    private final ItemRequestRepository itemRequestRepository;
+    /**
      * Список мапперов для конвертирования сущностей.
      */
     private final ItemMapper itemMapper;
@@ -69,18 +79,23 @@ public class ItemServiceImpl implements ItemService {
      * Конвертирует входящие данные в {@link Item}.
      * @param itemDto dto-объект вещи которую добавляет пользователь.
      * @param userId  уникальный идентификатор пользователя.
-     * @return возвращает вещь в формате {@link ItemDto} с приобретенным уникальным идентификатором.
+     * @return возвращает вещь в формате {@link ItemDtoIncreasedConfidential} с приобретенным уникальным идентификатором.
      */
     @Override
     @Transactional
-    public ItemDto add(ItemDto itemDto, int userId) {
+    public ItemDtoIncreasedConfidential add(ItemDto itemDto, int userId) {
         log.info("Поступил запрос на регистрацию и добавление вещи.");
         if (userService.userChecker(userId).equals(false)) {
             throw new NotFoundException("Пользователь не обнаружен.");
         } else {
             itemDto.setOwner(userMapper.toUser(userService.get(userId)));
+            if (itemDto.getRequestId() != 0) {
+                itemDto.setRequest(itemRequestRepository.findById(itemDto.getRequestId())
+                        .orElseThrow(() -> new NotFoundException(String.format("Запрос с id: %d не обнаружен.",
+                                itemDto.getRequestId()))));
+            }
             log.info("Вещь успешно зарегистрирована и добавлена");
-            return itemMapper.toItemDto(itemRepository.save(itemMapper.toItem(itemDto)));
+            return itemMapper.toItemDtoIncreasedConfidential(itemRepository.save(itemMapper.toItem(itemDto)));
         }
     }
 
@@ -92,11 +107,11 @@ public class ItemServiceImpl implements ItemService {
      * Генерирует {@link ForbiddenException} если вещи не принадлежит пользователю.
      * @param itemDto dto-объект содержащий данные для обновления.
      * @param userId  уникальный идентификатор пользователя (хозяина вещи).
-     * @return возвращает вещь в формате {@link ItemDto} с обновленными данными.
+     * @return возвращает вещь в формате {@link ItemDtoIncreasedConfidential} с обновленными данными.
      */
     @Override
     @Transactional
-    public ItemDto update(ItemDto itemDto, int itemId, int userId) {
+    public ItemDtoIncreasedConfidential update(ItemDto itemDto, int itemId, int userId) {
         log.info("Поступил запрос на обновление вещи пользователем с id: {}.", userId);
         if ((itemDto.getName() != null && itemDto.getName().isBlank())
                 || (itemDto.getDescription() != null && itemDto.getDescription().isBlank())) {
@@ -110,7 +125,7 @@ public class ItemServiceImpl implements ItemService {
                 .peek(item -> {
                     if (item.getOwner().getId() != userId) {
                         throw new ForbiddenException(String
-                                .format("Вещь не принадлежит пользователю с id: %d.", userId));
+                                .format("Вещь c id: %d не принадлежит пользователю с id: %d.", itemId, userId));
                     } else {
                         if (itemDto.getName() != null) {
                             item.setName(itemDto.getName());
@@ -125,9 +140,9 @@ public class ItemServiceImpl implements ItemService {
                         log.info("Вещь пользователя с id: {} успешно обновлена.", userId);
                     }
                 })
-                .map(itemMapper::toItemDto)
+                .map(itemMapper::toItemDtoIncreasedConfidential)
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException("Вещь не обнаружена."));
+                .orElseThrow(() -> new NotFoundException(String.format("Вещь c id %d не обнаружена.", itemId)));
     }
 
     /**
@@ -136,17 +151,20 @@ public class ItemServiceImpl implements ItemService {
      * 1) Предоставление данных для владельца вещи.
      * 2) Предоставления данных для остальных пользователей.
      * Владельцу предоставляются данные о прошлых и ближайших бронированиях.
-     * Генерирует {@link NotFoundException} если вещь не обнаружена в системе.
+     * Генерирует {@link NotFoundException} если вещь или пользователь не обнаружены в системе.
      * @param itemId уникальный идентификатор вещи.
      * @param userId уникальный идентификатор пользователя.
-     * @return возвращает вещь в формате {@link ItemDto} в случае если такова имеется.
+     * @return возвращает вещь в формате {@link ItemDtoIncreasedConfidential} в случае если такова имеется.
      */
     @Override
     @Transactional
-    public ItemDto getById(int itemId, int userId) {
+    public ItemDtoIncreasedConfidential getById(int itemId, int userId) {
         log.info("Поступил запрос пользователя с id: {} на поиск вещи c id: {}.", userId, itemId);
+        if (!userService.userChecker(userId)) {
+            throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
+        }
         return itemRepository.findById(itemId).stream()
-                .map(itemMapper::toItemDto)
+                .map(itemMapper::toItemDtoIncreasedConfidential)
                 .peek(itemDto -> {
                     if (itemDto.getOwner().getId() == userId) {
                         bookingSetter(itemDto);
@@ -157,39 +175,56 @@ public class ItemServiceImpl implements ItemService {
                 })
                 .map(this::commentSetter)
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException("Вещь не обнаружена."));
+                .orElseThrow(() -> new NotFoundException(String.format("Вещь c id %d не обнаружена.", itemId)));
     }
 
     /**
-     * Сервисный метод-поисковик.
+     * Сервисный метод-поисковик, возвращает результат постранично.
+     * Генерирует {@link NotFoundException} если пользователь не был найден.
+     * @param from индекс первого элемента.
+     * @param size количество элементов для отображения.
      * @param text   принимает запрос в текстовом формате.
      * @param userId принимает уникальный идентификатор пользователя осуществляющего запрос.
-     * @return возвращает список доступных для аренды вещей подходящих под поисковый запрос в формате {@link ItemDto}.
+     * @return возвращает список доступных для аренды вещей
+     * подходящих под поисковый запрос в формате {@link ItemDtoIncreasedConfidential}.
      */
     @Override
-    public List<ItemDto> search(String text, int userId) {
+    public List<ItemDtoIncreasedConfidential> search(String text, int userId, int from, int size) {
         log.info("Поступил запрос на поиск вещей по запросу пользователем с id: {}.", userId);
+        pageValidator(from, size);
+        if (!userService.userChecker(userId)) {
+            throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
+        }
         if (text.isBlank()) {
             return Collections.emptyList();
         } else {
-            return itemRepository.search(text).stream()
+            return itemRepository.search(text, PageRequest.of(from > 0 ? from / size : 0, size))
+                    .stream()
                     .filter(item -> item.getAvailable().equals(true))
-                    .map(itemMapper::toItemDto)
+                    .map(itemMapper::toItemDtoIncreasedConfidential)
                     .collect(Collectors.toList());
         }
     }
 
     /**
-     * Сервисный метод поиска и предоставления всех вещей пользователя.
+     * Сервисный метод поиска и предоставления всех вещей пользователя постранично.
+     * Генерирует {@link NotFoundException} если пользователь не был найден.
+     * @param from индекс первого элемента.
+     * @param size количество элементов для отображения.
      * @param userId уникальный идентификатор пользователя.
-     * @return возвращает список вещей в формате {@link ItemDto}
+     * @return возвращает список вещей в формате {@link ItemDtoIncreasedConfidential}
      */
     @Override
     @Transactional
-    public List<ItemDto> getAll(int userId) {
+    public List<ItemDtoIncreasedConfidential> getAll(int userId, int from, int size) {
         log.info("Поступил запрос на предоставление вещей пользователя с id: {}.", userId);
-        return itemRepository.findItemByOwnerId(userId).stream()
-                .map(itemMapper::toItemDto)
+        pageValidator(from, size);
+        if (!userService.userChecker(userId)) {
+            throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
+        }
+        return itemRepository.findItemByOwnerId(userId, PageRequest.of(from > 0 ? from / size : 0, size))
+                .stream()
+                .map(itemMapper::toItemDtoIncreasedConfidential)
                 .map(this::bookingSetter)
                 .map(this::commentSetter)
                 .collect(Collectors.toList());
@@ -210,7 +245,7 @@ public class ItemServiceImpl implements ItemService {
      * @param itemDto DTO-объект вещи для которой осуществляется присвоение данных.
      * @return возвращает DTO-объект вещи с присвоенными данными.
      */
-    private ItemDto bookingSetter(ItemDto itemDto) {
+    private ItemDtoIncreasedConfidential bookingSetter(ItemDtoIncreasedConfidential itemDto) {
         bookingRepository.findTopByItemIdAndStartIsBeforeAndStatus(itemDto.getId(),
                 LocalDateTime.now(), Status.APPROVED,
                 Sort.by(Sort.Direction.DESC, "start"))
@@ -235,7 +270,7 @@ public class ItemServiceImpl implements ItemService {
     public CommentDtoIncreasedConfidential addComment(int itemId, int userId, CommentDto commentDto) {
         log.info("Поступил запрос на добавление комментария пользователем с id: {} к вещи с id: {}", userId, itemId);
         if (!itemChecker(itemId)) {
-            throw new NotFoundException("Вещь не обнаружена.");
+            throw new NotFoundException(String.format("Вещь c id: %d не обнаружена.", itemId));
         } else if (!userService.userChecker(userId)) {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
         } else {
@@ -259,7 +294,7 @@ public class ItemServiceImpl implements ItemService {
      * @param itemDto DTO-объект вещи.
      * @return возвращает обработанный DTO-объект вещи.
      */
-    private ItemDto commentSetter(ItemDto itemDto) {
+    private ItemDtoIncreasedConfidential commentSetter(ItemDtoIncreasedConfidential itemDto) {
         itemDto.setComments(commentRepository.findByItemId(itemDto.getId()).stream()
                 .map(commentMapper::toCommentDtoIncreasedConfidential)
                 .collect(Collectors.toList()));
