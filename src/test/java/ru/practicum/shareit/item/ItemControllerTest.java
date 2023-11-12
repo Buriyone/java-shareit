@@ -30,8 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ItemControllerTest {
     private final MockMvc mockMvc;
-    private final String MEDIA_TYPE = "application/json";
-    private final String USER_ID = "X-Sharer-User-Id";
+    private static final String MEDIA_TYPE = "application/json";
+    private static final String USER_ID = "X-Sharer-User-Id";
     @MockBean
     private final ItemService itemService;
 

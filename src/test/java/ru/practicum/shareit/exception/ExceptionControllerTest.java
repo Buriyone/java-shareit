@@ -11,9 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoIncreasedConfidential;
 import ru.practicum.shareit.user.dto.UserDto;
-
 import javax.transaction.Transactional;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,8 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class ExceptionControllerTest {
     private final MockMvc mockMvc;
-    private final String MEDIA_TYPE = "application/json";
-    private final String USER_ID = "X-Sharer-User-Id";
+    private static final String MEDIA_TYPE = "application/json";
+    private static final String USER_ID = "X-Sharer-User-Id";
     private final Gson gson = new Gson();
 
     @Test

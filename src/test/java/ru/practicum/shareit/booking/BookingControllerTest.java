@@ -27,8 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class BookingControllerTest {
     private final MockMvc mockMvc;
-    private final String MEDIA_TYPE = "application/json";
-    private final String USER_ID = "X-Sharer-User-Id";
+    private static final String MEDIA_TYPE = "application/json";
+    private static final String USER_ID = "X-Sharer-User-Id";
     private final LocalDateTime start = LocalDateTime.now().plusHours(1).withNano(0);
     private final LocalDateTime end = LocalDateTime.now().plusHours(2).withNano(0);
     @MockBean
