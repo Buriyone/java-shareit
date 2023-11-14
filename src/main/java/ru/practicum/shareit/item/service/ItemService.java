@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.service;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.dto.CommentDtoIncreasedConfidential;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoIncreasedConfidential;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
@@ -11,15 +12,15 @@ import java.util.List;
  * Интерфейс сервиса контроллера обработки запросов связанных с {@link Item} и {@link ItemDto}.
  */
 public interface ItemService {
-    ItemDto add(ItemDto itemDto, int userId);
+    ItemDtoIncreasedConfidential add(ItemDto itemDto, int userId);
 
-    ItemDto update(ItemDto itemDto, int itemId, int userId);
+    ItemDtoIncreasedConfidential update(ItemDto itemDto, int itemId, int userId);
 
-    ItemDto getById(int itemId, int userId);
+    ItemDtoIncreasedConfidential getById(int itemId, int userId);
 
-    List<ItemDto> search(String text, int userId);
+    List<ItemDtoIncreasedConfidential> search(String text, int userId, int from, int size);
 
-    List<ItemDto> getAll(int userId);
+    List<ItemDtoIncreasedConfidential> getAll(int userId, int from, int size);
 
     boolean itemChecker(int itemId);
 

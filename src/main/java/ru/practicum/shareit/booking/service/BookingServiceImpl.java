@@ -2,6 +2,9 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.assistant.State;
@@ -24,6 +27,9 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static ru.practicum.shareit.PageAppropriator.PageAppropriator.pageAppropriator;
+import static ru.practicum.shareit.validation.Validator.pageValidator;
 
 /**
  * Реализация интерфейса {@link BookingService}.
@@ -79,7 +85,8 @@ public class BookingServiceImpl implements BookingService {
                         throw new NotFoundException("Владелец вещи не может оформлять бронирование.");
                     }
                 })
-                .findFirst().orElseThrow(() -> new NotFoundException("Вещь не обнаружена.")));
+                .findFirst().orElseThrow(() -> new NotFoundException(String.format("Вещь c id: %d не обнаружена.",
+                        bookingDto.getItemId()))));
         bookingDto.setBooker(userRepository.findById(userId).stream()
                 .findFirst().orElseThrow(() -> new NotFoundException(String
                         .format("Пользователь c id: %d не обнаружен.", userId))));
@@ -107,7 +114,8 @@ public class BookingServiceImpl implements BookingService {
                         throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
                     } else if (booking.getItem().getOwner().getId() != userId) {
                         throw new NotFoundException(String
-                                .format("Вещь не принадлежит пользователю с id: %d.", userId));
+                                .format("Вещь с id: %d не принадлежит пользователю с id: %d.",
+                                        booking.getItem().getId(), userId));
                     } else if (!booking.getStatus().equals(Status.WAITING)) {
                         throw new ValidationException("Бронирование уже было обработано.");
                     } else {
@@ -121,7 +129,9 @@ public class BookingServiceImpl implements BookingService {
                     }
                 })
                 .map(bookingMapper::toBookingDto)
-                .findFirst().orElseThrow(() -> new NotFoundException("Бронирование не обнаружено."));
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(String
+                        .format("Бронирование c id: %d не обнаружено.", bookingId)));
     }
 
     /**
@@ -135,11 +145,12 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto get(int bookingId, int userId) {
         log.info("Поступил запрос на предоставление данных о бронировании пользователем с id: {}", userId);
+        if (!userService.userChecker(userId)) {
+            throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
+        }
         return bookingRepository.findById(bookingId).stream()
                 .peek(booking -> {
-                    if (!userService.userChecker(userId)) {
-                        throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
-                    } else if (booking.getBooker().getId() != userId
+                    if (booking.getBooker().getId() != userId
                             && booking.getItem().getOwner().getId() != userId) {
                         throw new NotFoundException(String.format("Пользователь с id: %d не является автором " +
                                 "бронирования или владельцем вещи.", userId));
@@ -147,45 +158,52 @@ public class BookingServiceImpl implements BookingService {
                     log.info("Данные о бронировании c id: {} предоставлены пользователю с id: {}", bookingId, userId);
                 })
                 .map(bookingMapper::toBookingDto)
-                .findFirst().orElseThrow(() -> new NotFoundException("Бронирование не обнаружено."));
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(String
+                        .format("Бронирование с id: %d не обнаружено.", bookingId)));
     }
 
     /**
      * Метод предоставления списка бронирований по параметру. По умолчанию предоставляет все вещи.
      * Генерирует {@link NotFoundException} если пользователь не был обнаружен.
      * Генерирует {@link StateException} если был предан неподдерживаемый статус.
+     * Возвращает результат постранично.
+     * @param from индекс первого элемента.
+     * @param size количество элементов для отображения.
      * @param param переданный параметр-статус.
      * @param userId уникальный идентификатор пользователя.
      * @return возвращает список бронирований.
      */
     @Override
-    public List<BookingDto> getAll(String param, int userId) {
+    public List<BookingDto> getAll(String param, int userId, int from, int size) {
         log.info("Поступил запрос на предоставление всех бронирований " +
                 "пользователя c id: {} по параметру: {}", userId, param);
         if (!userService.userChecker(userId)) {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
         } else {
+            pageValidator(from, size);
+            Pageable pageable = PageRequest.of(pageAppropriator(from, size), size,
+                    Sort.by(Sort.Direction.DESC, "start"));
             try {
+                LocalDateTime currentTime = LocalDateTime.now();
                 switch (State.valueOf(param)) {
                     case CURRENT:
                         return converter(bookingRepository.findBookingByBookerIdAndStartIsBeforeAndEndIsAfter(userId,
-                                LocalDateTime.now(), LocalDateTime.now(),
-                                Sort.by(Sort.Direction.DESC, "start")));
+                                currentTime, currentTime, pageable));
                     case PAST:
                         return converter(bookingRepository.findBookingByBookerIdAndEndIsBefore(userId,
-                                LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
+                                currentTime, pageable));
                     case FUTURE:
                         return converter(bookingRepository.findBookingByBookerIdAndStartIsAfter(userId,
-                                        LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
+                                currentTime, pageable));
                     case WAITING:
                         return converter(bookingRepository.findBookingByBookerIdAndStatus(userId,
-                                Status.WAITING, Sort.by(Sort.Direction.DESC, "start")));
+                                Status.WAITING, pageable));
                     case REJECTED:
                         return converter(bookingRepository.findBookingByBookerIdAndStatus(userId,
-                                Status.REJECTED, Sort.by(Sort.Direction.DESC, "start")));
+                                Status.REJECTED, pageable));
                     default:
-                        return converter(bookingRepository.findBookingByBookerId(userId,
-                                Sort.by(Sort.Direction.DESC, "start")));
+                        return converter(bookingRepository.findBookingByBookerId(userId, pageable));
                 }
             } catch (IllegalArgumentException e) {
                 throw new StateException("Unknown state: UNSUPPORTED_STATUS");
@@ -197,38 +215,42 @@ public class BookingServiceImpl implements BookingService {
      * Метод предоставления списка бронирований по параметру для владельца вещи. По умолчания предоставляет все вещи.
      * Генерирует {@link NotFoundException} если пользователь не был обнаружен.
      * Генерирует {@link StateException} если был предан неподдерживаемый статус.
+     * @param from индекс первого элемента.
+     * @param size количество элементов для отображения.
      * @param param переданный параметр-статус.
      * @param userId уникальный идентификатор пользователя.
      * @return возвращает список бронирований.
      */
     @Override
-    public List<BookingDto> getByUser(String param, int userId) {
+    public List<BookingDto> getByUser(String param, int userId, int from, int size) {
         log.info("Поступил запрос на предоставление всех бронирований " +
                 "для владельца c id: {} по параметру: {}", userId, param);
         if (!userService.userChecker(userId)) {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
         } else {
+            pageValidator(from, size);
+            Pageable pageable = PageRequest.of(pageAppropriator(from, size), size,
+                    Sort.by(Sort.Direction.DESC, "start"));
             try {
+                LocalDateTime currentTime = LocalDateTime.now();
                 switch (State.valueOf(param)) {
                     case CURRENT:
                         return converter(bookingRepository.findBookingByItemOwnerIdAndStartIsBeforeAndEndIsAfter(userId,
-                                LocalDateTime.now(), LocalDateTime.now(),
-                                Sort.by(Sort.Direction.DESC, "start")));
+                                currentTime, currentTime, pageable));
                     case PAST:
                         return converter(bookingRepository.findBookingByItemOwnerIdAndEndIsBefore(userId,
-                                LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
+                                currentTime, pageable));
                     case FUTURE:
                         return converter(bookingRepository.findBookingByItemOwnerIdAndStartIsAfter(userId,
-                                LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
+                                currentTime, pageable));
                     case WAITING:
                         return converter(bookingRepository.findBookingByItemOwnerIdAndStatus(userId,
-                                Status.WAITING, Sort.by(Sort.Direction.DESC, "start")));
+                                Status.WAITING, pageable));
                     case REJECTED:
                         return converter(bookingRepository.findBookingByItemOwnerIdAndStatus(userId,
-                                Status.REJECTED, Sort.by(Sort.Direction.DESC, "start")));
+                                Status.REJECTED, pageable));
                     default:
-                        return converter(bookingRepository.findBookingByItemOwnerId(userId,
-                                Sort.by(Sort.Direction.DESC, "start")));
+                        return converter(bookingRepository.findBookingByItemOwnerId(userId, pageable));
                 }
             } catch (IllegalArgumentException e) {
                 throw new StateException("Unknown state: UNSUPPORTED_STATUS");
@@ -238,11 +260,11 @@ public class BookingServiceImpl implements BookingService {
 
     /**
      * Метод сортировки и конвертирования списка бронирований в DTO-объекты.
-     * @param list список бронирований.
+     * @param page итоговая страница бронирований.
      * @return возвращает отсортированный и конвертированный список.
      */
-    private List<BookingDto> converter(List<Booking> list) {
-        return list.stream()
+    private List<BookingDto> converter(Page<Booking> page) {
+        return page.stream()
                 .map(bookingMapper::toBookingDto)
                 .collect(Collectors.toList());
     }

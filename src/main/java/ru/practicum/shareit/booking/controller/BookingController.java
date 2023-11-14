@@ -8,7 +8,6 @@ import ru.practicum.shareit.booking.assistant.State;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.validation.Create;
-
 import java.util.List;
 
 /**
@@ -42,9 +41,9 @@ public class BookingController {
      * Обрабатывает запросы на подтверждение или отклонение бронирования.
      */
     @PatchMapping("/{bookingId}")
-    public BookingDto approved(@PathVariable int bookingId,
-                               @RequestParam boolean approved,
-                               @RequestHeader(USER_ID) int userId) {
+    public BookingDto statusAppropriator(@PathVariable int bookingId,
+                                         @RequestParam boolean approved,
+                                         @RequestHeader(USER_ID) int userId) {
         return bookingService.statusAppropriator(bookingId, approved, userId);
     }
 
@@ -61,17 +60,21 @@ public class BookingController {
      * Обрабатывает запрос на предоставление списка в рамках: {@link State}.
      */
     @GetMapping
-    private List<BookingDto> getAll(@RequestParam(defaultValue = "ALL") String state,
-                                    @RequestHeader(USER_ID) int userId) {
-        return bookingService.getAll(state, userId);
+    private List<BookingDto> getAll(@RequestParam(required = false, defaultValue = "ALL") String state,
+                                    @RequestHeader(USER_ID) int userId,
+                                    @RequestParam (defaultValue = "0") int from,
+                                    @RequestParam (defaultValue = "20") int size) {
+        return bookingService.getAll(state, userId, from, size);
     }
 
     /**
      * Обрабатывает запрос на предоставления списка бронирований для владельца в рамках {@link State}.
      */
     @GetMapping("/owner")
-    private List<BookingDto> getByUser(@RequestParam(defaultValue = "ALL") String state,
-                                       @RequestHeader(USER_ID) int userId) {
-        return bookingService.getByUser(state, userId);
+    private List<BookingDto> getByUser(@RequestParam(required = false, defaultValue = "ALL") String state,
+                                       @RequestHeader(USER_ID) int userId,
+                                       @RequestParam (defaultValue = "0") int from,
+                                       @RequestParam (defaultValue = "20") int size) {
+        return bookingService.getByUser(state, userId, from, size);
     }
 }

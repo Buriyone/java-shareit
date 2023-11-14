@@ -1,70 +1,71 @@
 package ru.practicum.shareit.booking.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.shareit.booking.assistant.Status;
 import ru.practicum.shareit.booking.model.Booking;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 /**
  * Хранилище для {@link Booking}.
  */
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
-    List<Booking> findBookingByBookerIdAndStartIsBeforeAndEndIsAfter(int userId,
-                                                                     LocalDateTime time1,
-                                                                     LocalDateTime time2,
-                                                                     Sort sort);
+    Page<Booking> findBookingByBookerIdAndStartIsBeforeAndEndIsAfter(int userId,
+                                                                     LocalDateTime start,
+                                                                     LocalDateTime end,
+                                                                     Pageable pageable);
 
-    List<Booking> findBookingByBookerIdAndEndIsBefore(int userId,
-                                                      LocalDateTime time,
-                                                      Sort sort);
+    Page<Booking> findBookingByBookerIdAndEndIsBefore(int userId,
+                                                      LocalDateTime currentTime,
+                                                      Pageable pageable);
 
-    List<Booking> findBookingByBookerIdAndStartIsAfter(int userId,
-                                                       LocalDateTime time,
-                                                       Sort sort);
+    Page<Booking> findBookingByBookerIdAndStartIsAfter(int userId,
+                                                       LocalDateTime currentTime,
+                                                       Pageable pageable);
 
-    List<Booking> findBookingByBookerIdAndStatus(int userId,
+    Page<Booking> findBookingByBookerIdAndStatus(int userId,
                                                  Status status,
-                                                 Sort sort);
+                                                 Pageable pageable);
 
-    List<Booking> findBookingByBookerId(int userId,
-                                        Sort sort);
+    Page<Booking> findBookingByBookerId(int userId,
+                                        Pageable pageable);
 
-    List<Booking> findBookingByItemOwnerIdAndStartIsBeforeAndEndIsAfter(int userId,
-                                                                        LocalDateTime time1,
-                                                                        LocalDateTime time2,
-                                                                        Sort sort);
+    Page<Booking> findBookingByItemOwnerIdAndStartIsBeforeAndEndIsAfter(int userId,
+                                                                        LocalDateTime start,
+                                                                        LocalDateTime end,
+                                                                        Pageable pageable);
 
-    List<Booking> findBookingByItemOwnerIdAndEndIsBefore(int userId,
-                                                         LocalDateTime time,
-                                                         Sort sort);
+    Page<Booking> findBookingByItemOwnerIdAndEndIsBefore(int userId,
+                                                         LocalDateTime currentTime,
+                                                         Pageable pageable);
 
-    List<Booking> findBookingByItemOwnerIdAndStartIsAfter(int userId,
-                                                          LocalDateTime time,
-                                                          Sort sort);
+    Page<Booking> findBookingByItemOwnerIdAndStartIsAfter(int userId,
+                                                          LocalDateTime currentTime,
+                                                          Pageable pageable);
 
-    List<Booking> findBookingByItemOwnerIdAndStatus(int userId,
+    Page<Booking> findBookingByItemOwnerIdAndStatus(int userId,
                                                     Status status,
-                                                    Sort sort);
+                                                    Pageable pageable);
 
-    List<Booking> findBookingByItemOwnerId(int userId,
-                                           Sort sort);
+    Page<Booking> findBookingByItemOwnerId(int userId,
+                                           Pageable pageable);
 
     Optional<Booking> findTopByItemIdAndStartIsBeforeAndStatus(int itemId,
-                                                               LocalDateTime time,
+                                                               LocalDateTime currentTime,
                                                                Status status,
                                                                Sort sort);
 
     Optional<Booking> findTopByItemIdAndStartIsAfterAndStatus(int itemId,
-                                                              LocalDateTime time,
+                                                              LocalDateTime currentTime,
                                                               Status status,
                                                               Sort sort);
 
     Optional<Booking> findTopByItemIdAndBookerIdAndStatusAndEndIsBefore(int itemId,
                                                                         int bookerId,
                                                                         Status status,
-                                                                        LocalDateTime time);
+                                                                        LocalDateTime currentTime);
 }
