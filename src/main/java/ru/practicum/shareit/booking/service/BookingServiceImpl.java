@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ru.practicum.shareit.PageAppropriator.PageAppropriator.pageAppropriator;
 import static ru.practicum.shareit.validation.Validator.pageValidator;
 
 /**
@@ -181,7 +182,7 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
         } else {
             pageValidator(from, size);
-            Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
+            Pageable pageable = PageRequest.of(pageAppropriator(from, size), size,
                     Sort.by(Sort.Direction.DESC, "start"));
             try {
                 LocalDateTime currentTime = LocalDateTime.now();
@@ -228,7 +229,7 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
         } else {
             pageValidator(from, size);
-            Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
+            Pageable pageable = PageRequest.of(pageAppropriator(from, size), size,
                     Sort.by(Sort.Direction.DESC, "start"));
             try {
                 LocalDateTime currentTime = LocalDateTime.now();

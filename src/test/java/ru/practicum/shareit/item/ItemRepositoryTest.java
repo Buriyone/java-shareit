@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -57,19 +58,20 @@ public class ItemRepositoryTest {
         List<Item> testList = this.itemRepository.findItemByOwnerId(user2.getId(),
                 PageRequest.of(0, 20));
         assertThat(testList.get(0)).isEqualTo(item);
+        assertEquals(item, testList.get(0), "Вещь отличается");
     }
 
     @Test
     public void searchTest() {
         List<Item> testList = this.itemRepository.search("deSCrIpTioN",
                 PageRequest.of(0, 20)).toList();
-        assertThat(testList.get(0)).isEqualTo(item);
+        assertEquals(item, testList.get(0), "Вещь отличается");
     }
 
     @Test
     public void findByRequestIdTest() {
         List<Item> testList = this.itemRepository.findByRequestId(itemRequest.getId());
-        assertThat(testList.get(0)).isEqualTo(item);
+        assertEquals(item, testList.get(0), "Вещь отличается");
     }
 
     @AfterEach

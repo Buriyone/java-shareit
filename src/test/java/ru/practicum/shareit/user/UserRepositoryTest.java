@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -22,9 +22,9 @@ public class UserRepositoryTest {
         User testUser;
         if (this.userRepository.findByEmailContainingIgnoreCase(user.getEmail()).isPresent()) {
             testUser = this.userRepository.findByEmailContainingIgnoreCase(user.getEmail()).get();
-            assertThat(testUser).isEqualTo(user);
-            assertThat(testUser.getName()).isEqualTo("John");
-            assertThat(testUser.getEmail()).isEqualTo("malkovich@yandex.ru");
+            assertEquals(user, testUser, "Пользователь отличается.");
+            assertEquals("John", testUser.getName(), "Имя отличается.");
+            assertEquals("malkovich@yandex.ru", testUser.getEmail(), "Почта отличается.");
         }
     }
 }

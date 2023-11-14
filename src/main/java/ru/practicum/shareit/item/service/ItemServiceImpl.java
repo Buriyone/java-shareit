@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ru.practicum.shareit.PageAppropriator.PageAppropriator.pageAppropriator;
 import static ru.practicum.shareit.validation.Validator.pageValidator;
 
 /**
@@ -198,7 +199,7 @@ public class ItemServiceImpl implements ItemService {
         if (text.isBlank()) {
             return Collections.emptyList();
         } else {
-            return itemRepository.search(text, PageRequest.of(from > 0 ? from / size : 0, size))
+            return itemRepository.search(text, PageRequest.of(pageAppropriator(from, size), size))
                     .stream()
                     .filter(item -> item.getAvailable().equals(true))
                     .map(itemMapper::toItemDtoIncreasedConfidential)
@@ -222,7 +223,7 @@ public class ItemServiceImpl implements ItemService {
         if (!userService.userChecker(userId)) {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
         }
-        return itemRepository.findItemByOwnerId(userId, PageRequest.of(from > 0 ? from / size : 0, size))
+        return itemRepository.findItemByOwnerId(userId, PageRequest.of(pageAppropriator(from, size), size))
                 .stream()
                 .map(itemMapper::toItemDtoIncreasedConfidential)
                 .map(this::bookingSetter)

@@ -68,8 +68,8 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDtoIncreasedConfidential> search(@RequestParam String text,
                                                      @RequestHeader(USER_ID) int userId,
-                                                     @RequestParam (required = false, defaultValue = "0") int from,
-                                                     @RequestParam (required = false, defaultValue = "20") int size) {
+                                                     @RequestParam (defaultValue = "0") int from,
+                                                     @RequestParam (defaultValue = "20") int size) {
         return itemService.search(text, userId, from, size);
     }
 
@@ -78,8 +78,8 @@ public class ItemController {
      */
     @GetMapping
     public List<ItemDtoIncreasedConfidential> getAll(@RequestHeader(USER_ID) int userId,
-                                                     @RequestParam (required = false, defaultValue = "0") int from,
-                                                     @RequestParam (required = false, defaultValue = "20") int size) {
+                                                     @RequestParam (defaultValue = "0") int from,
+                                                     @RequestParam (defaultValue = "20") int size) {
         return itemService.getAll(userId, from, size);
     }
 

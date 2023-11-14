@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -15,8 +14,7 @@ import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -42,7 +40,7 @@ public class ItemRequestRepositoryTest {
         this.entityManager.persist(itemRequest);
         List<ItemRequest> testList = this.itemRequestRepository
                 .findByRequestorId(user.getId(), Sort.by(Sort.Direction.DESC, "created"));
-        assertThat(testList.get(0)).isEqualTo(itemRequest);
+        assertEquals(itemRequest, testList.get(0), "Запрос отличается");
     }
 
     @Test
@@ -53,10 +51,9 @@ public class ItemRequestRepositoryTest {
         this.entityManager.persist(otherUser);
         otherItemRequest.setRequestor(otherUser);
         this.entityManager.persist(otherItemRequest);
-        Page<ItemRequest> page = itemRequestRepository
+        List<ItemRequest> testList = itemRequestRepository
                 .findAllByRequestorIdNot(user.getId(), PageRequest.of(0, 20,
-                        Sort.by(Sort.Direction.DESC, "created")));
-        ItemRequest testItemRequest = page.toList().get(0);
-        assertThat(testItemRequest).isEqualTo(otherItemRequest);
+                        Sort.by(Sort.Direction.DESC, "created"))).toList();
+        assertEquals(otherItemRequest, testList.get(0), "Запрос отличается");
     }
 }

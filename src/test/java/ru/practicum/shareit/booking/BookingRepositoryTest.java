@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -67,9 +68,9 @@ public class BookingRepositoryTest {
         List<Booking> testList = bookingRepository
                 .findBookingByBookerIdAndStartIsBeforeAndEndIsAfter(user2.getId(), currentTime,
                         currentTime, pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -80,9 +81,9 @@ public class BookingRepositoryTest {
         this.entityManager.persist(booking);
         List<Booking> testList = bookingRepository
                 .findBookingByBookerIdAndEndIsBefore(user2.getId(), currentTime, pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -93,9 +94,9 @@ public class BookingRepositoryTest {
         this.entityManager.persist(booking);
         List<Booking> testList = bookingRepository
                 .findBookingByBookerIdAndStartIsAfter(user2.getId(), currentTime, pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -103,9 +104,9 @@ public class BookingRepositoryTest {
         this.entityManager.persist(booking);
         List<Booking> testList = bookingRepository
                 .findBookingByBookerIdAndStatus(user2.getId(), Status.WAITING, pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -114,9 +115,9 @@ public class BookingRepositoryTest {
         this.entityManager.persist(booking);
         List<Booking> testList = bookingRepository
                 .findBookingByBookerIdAndStatus(user2.getId(), Status.REJECTED, pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -124,9 +125,9 @@ public class BookingRepositoryTest {
         this.entityManager.persist(booking);
         List<Booking> testList = bookingRepository
                 .findBookingByBookerId(user2.getId(), pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -138,9 +139,9 @@ public class BookingRepositoryTest {
         List<Booking> testList = bookingRepository
                 .findBookingByItemOwnerIdAndStartIsBeforeAndEndIsAfter(user1.getId(), currentTime,
                         currentTime, pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -151,9 +152,9 @@ public class BookingRepositoryTest {
         this.entityManager.persist(booking);
         List<Booking> testList = bookingRepository
                 .findBookingByItemOwnerIdAndEndIsBefore(user1.getId(), currentTime, pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -164,9 +165,9 @@ public class BookingRepositoryTest {
         this.entityManager.persist(booking);
         List<Booking> testList = bookingRepository
                 .findBookingByItemOwnerIdAndStartIsAfter(user1.getId(), currentTime, pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -174,9 +175,9 @@ public class BookingRepositoryTest {
         this.entityManager.persist(booking);
         List<Booking> testList = bookingRepository
                 .findBookingByItemOwnerIdAndStatus(user1.getId(), Status.WAITING, pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -185,9 +186,9 @@ public class BookingRepositoryTest {
         this.entityManager.persist(booking);
         List<Booking> testList = bookingRepository
                 .findBookingByItemOwnerIdAndStatus(user1.getId(), Status.REJECTED, pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -195,9 +196,9 @@ public class BookingRepositoryTest {
         this.entityManager.persist(booking);
         List<Booking> testList = bookingRepository
                 .findBookingByItemOwnerId(user1.getId(), pageable).toList();
-        assertThat(testList.get(0)).isEqualTo(booking);
-        assertThat(testList.get(0).getItem()).isEqualTo(item);
-        assertThat(testList.get(0).getBooker()).isEqualTo(user2);
+        assertEquals(booking, testList.get(0), "Бронирования отличаются.");
+        assertEquals(item, testList.get(0).getItem(), "Вещи отличаются");
+        assertEquals(user2, testList.get(0).getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -211,6 +212,9 @@ public class BookingRepositoryTest {
                 .findTopByItemIdAndStartIsBeforeAndStatus(item.getId(),currentTime, Status.APPROVED,
                         Sort.by(Sort.Direction.DESC, "start")).orElse(new Booking());
         assertThat(testBooking).isEqualTo(booking);
+        assertEquals(booking, testBooking, "Бронирования отличаются.");
+        assertEquals(item, testBooking.getItem(), "Вещи отличаются");
+        assertEquals(user2, testBooking.getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -223,7 +227,9 @@ public class BookingRepositoryTest {
         Booking testBooking = bookingRepository
                 .findTopByItemIdAndStartIsAfterAndStatus(item.getId(),currentTime, Status.APPROVED,
                         Sort.by(Sort.Direction.DESC, "start")).orElse(new Booking());
-        assertThat(testBooking).isEqualTo(booking);
+        assertEquals(booking, testBooking, "Бронирования отличаются.");
+        assertEquals(item, testBooking.getItem(), "Вещи отличаются");
+        assertEquals(user2, testBooking.getBooker(), "Автор бронирования отличается.");
     }
 
     @Test
@@ -236,7 +242,9 @@ public class BookingRepositoryTest {
         Booking testBooking = bookingRepository
                 .findTopByItemIdAndBookerIdAndStatusAndEndIsBefore(item.getId(), user2.getId(),
                         Status.APPROVED, currentTime).orElse(new Booking());
-        assertThat(testBooking).isEqualTo(booking);
+        assertEquals(booking, testBooking, "Бронирования отличаются.");
+        assertEquals(item, testBooking.getItem(), "Вещи отличаются");
+        assertEquals(user2, testBooking.getBooker(), "Автор бронирования отличается.");
     }
 
     @BeforeEach

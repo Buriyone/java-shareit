@@ -49,8 +49,8 @@ public class ItemRequestController {
      * Обрабатывает запрос на получение списка {@link ItemRequestDto}, созданных другими пользователями.
      */
     @GetMapping("/all")
-    public List<ItemRequestDto> getAll(@RequestParam (required = false, defaultValue = "0") int from,
-                                       @RequestParam (required = false, defaultValue = "20") int size,
+    public List<ItemRequestDto> getAll(@RequestParam (defaultValue = "0") int from,
+                                       @RequestParam (defaultValue = "20") int size,
                                        @RequestHeader(USER_ID) int userId) {
         return itemRequestService.getAll(from, size, userId);
     }

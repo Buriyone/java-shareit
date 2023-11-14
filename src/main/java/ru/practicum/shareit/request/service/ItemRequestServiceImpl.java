@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ru.practicum.shareit.PageAppropriator.PageAppropriator.pageAppropriator;
 import static ru.practicum.shareit.validation.Validator.pageValidator;
 
 /**
@@ -90,10 +91,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             return itemRequestRepository.findByRequestorId(userId, Sort.by(Sort.Direction.DESC, "created"))
                     .stream()
                     .map(itemRequestMapper::toItemRequestDto)
-                    .peek(itemRequestDto -> {
-                        itemRequestDto.setItems(itemRepository.findByRequestId(itemRequestDto.getId()).stream()
-                                .map(itemMapper::toItemDtoForRequest).collect(Collectors.toList()));
-                    })
+                    .peek(itemRequestDto -> itemRequestDto
+                            .setItems(itemRepository.findByRequestId(itemRequestDto.getId()).stream()
+                                    .map(itemMapper::toItemDtoForRequest)
+                                    .collect(Collectors.toList())))
                     .collect(Collectors.toList());
         }
     }
@@ -116,16 +117,15 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             throw new NotFoundException(String.format("Пользователь с id: %d не найден.", userId));
         }
         pageValidator(from, size);
-        return itemRequestRepository.findAllByRequestorIdNot(userId, PageRequest.of(from > 0 ? from / size : 0, size,
+        return itemRequestRepository.findAllByRequestorIdNot(userId, PageRequest.of(pageAppropriator(from, size), size,
                         Sort.by(Sort.Direction.DESC, "created")))
                 .stream()
                 .map(itemRequestMapper::toItemRequestDto)
-                .peek(itemRequestDto -> {
-                    itemRequestDto.setItems(itemRepository.findByRequestId(itemRequestDto.getId())
-                            .stream()
-                            .map(itemMapper::toItemDtoForRequest)
-                            .collect(Collectors.toList()));
-                }).collect(Collectors.toList());
+                .peek(itemRequestDto -> itemRequestDto
+                        .setItems(itemRepository.findByRequestId(itemRequestDto.getId())
+                                .stream()
+                                .map(itemMapper::toItemDtoForRequest)
+                                .collect(Collectors.toList()))).collect(Collectors.toList());
     }
 
     /**
@@ -144,12 +144,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             return itemRequestRepository.findById(requestId)
                     .stream()
                     .map(itemRequestMapper::toItemRequestDto)
-                    .peek(itemRequestDto -> {
-                        itemRequestDto.setItems(itemRepository.findByRequestId(requestId)
-                                .stream()
-                                .map(itemMapper::toItemDtoForRequest)
-                                .collect(Collectors.toList()));
-                    })
+                    .peek(itemRequestDto -> itemRequestDto.setItems(itemRepository.findByRequestId(requestId)
+                            .stream()
+                            .map(itemMapper::toItemDtoForRequest)
+                            .collect(Collectors.toList())))
                     .findFirst()
                     .orElseThrow(() -> new NotFoundException(String
                             .format("Запрос с id: %d не найден.", requestId)));
