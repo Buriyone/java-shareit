@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 @Data
 @Builder(toBuilder = true)
 public class ItemDto {
-    private int id;
     @NotBlank(message = "Название вещи не может быть пустым или содержать пробелы.", groups = {Create.class})
     private String name;
     @NotBlank(message = "Описание вещи не может быть пустым или содержать пробелы.", groups = {Create.class})
