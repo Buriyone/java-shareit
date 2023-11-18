@@ -1,3 +1,3 @@
-FROM amazoncorretto:11-alpine-jdk
+FROM amazoncorretto:11.0.2
 COPY target/*.jar appShareItGateway.jar
-ENTRYPOINT ["java","-jar","/appShareItGateway.jar", "--server.port=8080"]
+CMD ["java","-jar","/appShareItGateway.jar", "--server.port=8080"]

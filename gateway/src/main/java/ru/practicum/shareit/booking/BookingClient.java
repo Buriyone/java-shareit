@@ -28,9 +28,9 @@ public class BookingClient extends BaseClient {
         return post("", userId, bookingDto);
     }
 
-    public ResponseEntity<Object> statusAppropriator(int bookingId, boolean approved, int userId) {
+    public ResponseEntity<Object> statusAppropriator(int bookingId, boolean approved, long userId) {
         Map<String, Object> parameters = Map.of("approved", approved);
-        return patch("/" + bookingId, userId, parameters);
+        return patch("/" + bookingId + "?approved=" + approved, userId, parameters);
     }
 
     public ResponseEntity<Object> get(int bookingId, int userId) {
@@ -39,11 +39,11 @@ public class BookingClient extends BaseClient {
 
     public ResponseEntity<Object> getAll(String state, long userId, int from, int size) {
         Map<String, Object> parameters = Map.of("state", state, "from", from, "size", size);
-        return get("?state={state}&from={from}&size={size}", userId, parameters);
+        return get("?state=" + state + "&from=" + from + "&size=" + size, userId, parameters);
     }
 
     public ResponseEntity<Object> getByUser(String state, long userId, int from, int size) {
         Map<String, Object> parameters = Map.of("state", state, "from", from, "size", size);
-        return get("/owner?state={state}&from={from}&size={size}", userId, parameters);
+        return get("/owner?state=" + state + "&from=" + from + "&size=" + size, userId, parameters);
     }
 }

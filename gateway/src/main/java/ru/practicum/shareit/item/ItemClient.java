@@ -44,7 +44,7 @@ public class ItemClient extends BaseClient {
 
     public ResponseEntity<Object> getAll(long userId, int from, int size) {
         Map<String, Object> parameters = Map.of("from", from, "size", size);
-        return get("", userId, parameters);
+        return get("/?from={from}&size={size}", userId, parameters);
     }
 
     public ResponseEntity<Object> addComment(int itemId, int userId, CommentDto commentDto) {

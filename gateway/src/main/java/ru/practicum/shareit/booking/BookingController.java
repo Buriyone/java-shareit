@@ -42,7 +42,7 @@ public class BookingController {
     @PatchMapping("/{bookingId}")
     public ResponseEntity<Object> statusAppropriator(@PathVariable int bookingId,
                                                      @RequestParam boolean approved,
-                                                     @RequestHeader(USER_ID) int userId) {
+                                                     @RequestHeader(USER_ID) long userId) {
         log.info("Поступил запрос на подтверждение или отклонение бронирования бронирования.");
         return bookingClient.statusAppropriator(bookingId, approved, userId);
     }

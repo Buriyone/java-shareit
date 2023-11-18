@@ -223,7 +223,8 @@ public class ItemServiceImpl implements ItemService {
         if (!userService.userChecker(userId)) {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
         }
-        return itemRepository.findItemByOwnerId(userId, PageRequest.of(pageAppropriator(from, size), size))
+        return itemRepository.findItemByOwnerId(userId, PageRequest.of(pageAppropriator(from, size), size,
+                        Sort.by(Sort.Direction.ASC, "id")))
                 .stream()
                 .map(itemMapper::toItemDtoIncreasedConfidential)
                 .map(this::bookingSetter)
