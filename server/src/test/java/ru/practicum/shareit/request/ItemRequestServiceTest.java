@@ -114,20 +114,6 @@ public class ItemRequestServiceTest {
             assertEquals("Пользователь с id: 999 не найден.", e.getMessage(),
                     "Описание ошибки отличается");
         }
-        try {
-            itemRequestService.getAll(-1, 0, user.getId());
-        } catch (Exception e) {
-            assertEquals(ValidationException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Значение from не может быть отрицательным.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
-        try {
-            itemRequestService.getAll(0, 0, user.getId());
-        } catch (Exception e) {
-            assertEquals(ValidationException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Значение size не может быть меньше 1.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
     }
 
     @Test

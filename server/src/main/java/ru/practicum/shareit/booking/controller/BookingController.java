@@ -2,13 +2,14 @@ package ru.practicum.shareit.booking.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.assistant.State;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.validation.Create;
+
 import java.util.List;
+
+import static ru.practicum.shareit.item.controller.ItemController.USER_ID;
 
 /**
  * Контроллер для работы с бронированиями.
@@ -21,18 +22,13 @@ public class BookingController {
      * Предоставляет доступ к сервису бронирований.
      */
     private final BookingService bookingService;
-    /**
-     * Константа заголовка.
-     */
-    private static final String USER_ID = "X-Sharer-User-Id";
 
     /**
      * Обрабатывает запрос на регистрацию бронирования.
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public BookingDto add(@Validated(Create.class)
-                          @RequestBody BookingDto bookingDto,
+    public BookingDto add(@RequestBody BookingDto bookingDto,
                           @RequestHeader(USER_ID) int userId) {
         return bookingService.add(bookingDto, userId);
     }
@@ -60,10 +56,10 @@ public class BookingController {
      * Обрабатывает запрос на предоставление списка в рамках: {@link State}.
      */
     @GetMapping
-    private List<BookingDto> getAll(@RequestParam(defaultValue = "ALL") String state,
+    private List<BookingDto> getAll(@RequestParam String state,
                                     @RequestHeader(USER_ID) int userId,
-                                    @RequestParam (defaultValue = "0") int from,
-                                    @RequestParam (defaultValue = "20") int size) {
+                                    @RequestParam int from,
+                                    @RequestParam int size) {
         return bookingService.getAll(state, userId, from, size);
     }
 
@@ -71,10 +67,10 @@ public class BookingController {
      * Обрабатывает запрос на предоставления списка бронирований для владельца в рамках {@link State}.
      */
     @GetMapping("/owner")
-    private List<BookingDto> getByUser(@RequestParam(defaultValue = "ALL") String state,
+    private List<BookingDto> getByUser(@RequestParam String state,
                                        @RequestHeader(USER_ID) int userId,
-                                       @RequestParam (defaultValue = "0") int from,
-                                       @RequestParam (defaultValue = "20") int size) {
+                                       @RequestParam int from,
+                                       @RequestParam int size) {
         return bookingService.getByUser(state, userId, from, size);
     }
 }

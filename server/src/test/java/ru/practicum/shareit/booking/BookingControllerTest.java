@@ -239,7 +239,7 @@ public class BookingControllerTest {
         List<BookingDto> testList = new ArrayList<>();
         testList.add(bookingDto);
         when(bookingService.getAll(anyString(), anyInt(), anyInt(), anyInt())).thenReturn(testList);
-        this.mockMvc.perform(get("/bookings")
+        this.mockMvc.perform(get("/bookings?state=ALL&from=0&size=20")
                         .header(USER_ID, 1)
                         .contentType(MEDIA_TYPE))
                 .andExpect(status().isOk())
@@ -268,7 +268,7 @@ public class BookingControllerTest {
         List<BookingDto> testList = new ArrayList<>();
         testList.add(bookingDto);
         when(bookingService.getByUser(anyString(), anyInt(), anyInt(), anyInt())).thenReturn(testList);
-        this.mockMvc.perform(get("/bookings/owner")
+        this.mockMvc.perform(get("/bookings/owner?state=ALL&from=0&size=20")
                         .header(USER_ID, 1)
                         .contentType(MEDIA_TYPE))
                 .andExpect(status().isOk())

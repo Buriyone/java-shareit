@@ -63,91 +63,19 @@ public class ItemControllerTest {
 
     @Test
     public void addValidationTest() throws Exception {
-        ItemDto invalidItemDto = ItemDto.builder()
-                .description("description")
-                .available(true)
-                .build();
-        this.mockMvc.perform(post("/items")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidItemDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidItemDto = ItemDto.builder()
-                .name("")
-                .description("description")
-                .available(true)
-                .build();
-        this.mockMvc.perform(post("/items")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidItemDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidItemDto = ItemDto.builder()
-                .name(" ")
-                .description("description")
-                .available(true)
-                .build();
-        this.mockMvc.perform(post("/items")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidItemDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidItemDto = ItemDto.builder()
-                .name("name")
-                .available(true)
-                .build();
-        this.mockMvc.perform(post("/items")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidItemDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidItemDto = ItemDto.builder()
-                .name("name")
-                .description("")
-                .available(true)
-                .build();
-        this.mockMvc.perform(post("/items")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidItemDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidItemDto = ItemDto.builder()
-                .name("name")
-                .description(" ")
-                .available(true)
-                .build();
-        this.mockMvc.perform(post("/items")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidItemDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidItemDto = ItemDto.builder()
-                .name("name")
-                .description("description")
-                .build();
-        this.mockMvc.perform(post("/items")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidItemDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidItemDto = ItemDto.builder()
+        ItemDto validItemDto =  ItemDto.builder()
                 .name("name")
                 .description("description")
                 .available(true)
                 .build();
         this.mockMvc.perform(post("/items")
                         .header("imposter", 1)
-                        .content(new Gson().toJson(invalidItemDto))
+                        .content(new Gson().toJson(validItemDto))
                         .contentType(MEDIA_TYPE))
                 .andExpect(status().isBadRequest());
-        invalidItemDto = ItemDto.builder()
-                .name("name")
-                .description("description")
-                .available(true)
-                .build();
         this.mockMvc.perform(post("/items")
                         .header(USER_ID, "imposter")
-                        .content(new Gson().toJson(invalidItemDto))
+                        .content(new Gson().toJson(validItemDto))
                         .contentType(MEDIA_TYPE))
                 .andExpect(status().isBadRequest());
     }
@@ -282,7 +210,7 @@ public class ItemControllerTest {
         testList.add(itemDtoIncreasedConfidential);
         when(itemService.search(anyString(), anyInt(), anyInt(), anyInt()))
                 .thenReturn(testList);
-        this.mockMvc.perform(get("/items/search?text=name")
+        this.mockMvc.perform(get("/items/search?text=name&from=0&size=20")
                         .header(USER_ID, 1)
                         .accept(MEDIA_TYPE))
                 .andExpect(status().isOk())
@@ -310,7 +238,7 @@ public class ItemControllerTest {
         testList.add(itemDtoIncreasedConfidential);
         when(itemService.getAll(anyInt(), anyInt(), anyInt()))
                 .thenReturn(testList);
-        this.mockMvc.perform(get("/items")
+        this.mockMvc.perform(get("/items?&from=0&size=20")
                         .header(USER_ID, 1)
                         .accept(MEDIA_TYPE))
                 .andExpect(status().isOk())
@@ -324,28 +252,6 @@ public class ItemControllerTest {
 
     @Test
     public void addCommentValidationTest() throws Exception {
-        CommentDto invalidCommentDto = CommentDto.builder().build();
-        this.mockMvc.perform(post("/items/1/comment")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidCommentDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidCommentDto = CommentDto.builder()
-                .text("")
-                .build();
-        this.mockMvc.perform(post("/items/1/comment")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidCommentDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidCommentDto = CommentDto.builder()
-                .text(" ")
-                .build();
-        this.mockMvc.perform(post("/items/1/comment")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidCommentDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
         CommentDto validCommentDto = CommentDto.builder()
                 .text("text")
                 .build();

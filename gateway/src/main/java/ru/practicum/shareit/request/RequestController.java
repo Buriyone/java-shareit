@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.validation.Create;
 
+import static ru.practicum.shareit.item.ItemController.USER_ID;
+
 /**
  * Клиентский контроллер для работы с пользовательскими запросами.
  */
@@ -18,8 +20,10 @@ import ru.practicum.shareit.validation.Create;
 @RequiredArgsConstructor
 @Slf4j
 public class RequestController {
+    /**
+     * Предоставляет доступ к сервису запросов.
+     */
     private final RequestClient requestClient;
-    private static final String USER_ID = "X-Sharer-User-Id";
 
     /**
      * Обрабатывает запрос на регистрацию {@link ItemRequestDto}.

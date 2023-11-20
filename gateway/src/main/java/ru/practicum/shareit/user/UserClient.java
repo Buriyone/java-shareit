@@ -10,6 +10,8 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.client.BaseClient;
 import ru.practicum.shareit.user.dto.UserRequestDto;
 
+import static ru.practicum.shareit.validation.Validator.idValidator;
+
 @Service
 public class UserClient extends BaseClient {
     private static final String API_PREFIX = "/users";
@@ -31,14 +33,17 @@ public class UserClient extends BaseClient {
     }
 
     public ResponseEntity<Object> update(int id, UserRequestDto userRequestDto) {
+        idValidator(id);
         return patch("/" + id, userRequestDto);
     }
 
     public void delete(int id) {
+        idValidator(id);
         delete("/" + id);
     }
 
     public ResponseEntity<Object> get(int id) {
+        idValidator(id);
         return get("/" + id);
     }
 }

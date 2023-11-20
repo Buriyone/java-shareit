@@ -43,23 +43,6 @@ public class ItemRequestControllerTest {
     public void addValidationTest() throws Exception {
         ItemRequestDto invalidItemRequestDto = ItemRequestDto.builder().build();
         this.mockMvc.perform(post("/requests")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidItemRequestDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidItemRequestDto = ItemRequestDto.builder().description("").build();
-        this.mockMvc.perform(post("/requests")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidItemRequestDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidItemRequestDto = ItemRequestDto.builder().description(" ").build();
-        this.mockMvc.perform(post("/requests")
-                        .header(USER_ID, 1)
-                        .content(new Gson().toJson(invalidItemRequestDto))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        this.mockMvc.perform(post("/requests")
                         .header(USER_ID, "imposter")
                         .content(new Gson().toJson(invalidItemRequestDto))
                         .contentType(MEDIA_TYPE))
@@ -138,7 +121,7 @@ public class ItemRequestControllerTest {
                 .created(time).requestor(user).build());
         when(itemRequestService.getAll(anyInt(), anyInt(), anyInt()))
                 .thenReturn(testList);
-        this.mockMvc.perform(get("/requests/all")
+        this.mockMvc.perform(get("/requests/all?from=0&size=20")
                         .header(USER_ID, 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.[0].id").value(1))

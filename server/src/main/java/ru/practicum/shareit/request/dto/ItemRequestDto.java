@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import ru.practicum.shareit.request.model.ItemRequest;
-import ru.practicum.shareit.validation.Create;
 
 /**
  * DTO-объект для {@link ItemRequest}.
@@ -22,7 +21,7 @@ import ru.practicum.shareit.validation.Create;
 @Builder(toBuilder = true)
 public class ItemRequestDto {
     private int id;
-    @NotBlank(message = "текст запроса не может отсутствовать.", groups = {Create.class})
+    @NotBlank(message = "текст запроса не может отсутствовать.")
     private String description;
     private User requestor;
     private LocalDateTime created;

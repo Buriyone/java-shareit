@@ -20,8 +20,14 @@ import ru.practicum.shareit.validation.Update;
 @RequiredArgsConstructor
 @Slf4j
 public class ItemController {
+    /**
+     * Предоставляет доступ к сервису вещей.
+     */
     private final ItemClient itemClient;
-    private static final String USER_ID = "X-Sharer-User-Id";
+    /**
+     * Константа заголовка.
+     */
+    public static final String USER_ID = "X-Sharer-User-Id";
 
     /**
      * Обрабатывает запрос на регистрацию и добавление.

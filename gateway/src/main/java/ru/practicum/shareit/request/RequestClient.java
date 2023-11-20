@@ -12,6 +12,9 @@ import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 import java.util.Map;
 
+import static ru.practicum.shareit.validation.Validator.idValidator;
+import static ru.practicum.shareit.validation.Validator.pageValidator;
+
 @Service
 public class RequestClient extends BaseClient {
     private static final String API_PREFIX = "/requests";
@@ -25,19 +28,25 @@ public class RequestClient extends BaseClient {
     }
 
     public ResponseEntity<Object> add(ItemRequestDto itemRequestDto, int userId) {
+        idValidator(userId);
         return post("", userId, itemRequestDto);
     }
 
     public ResponseEntity<Object> get(int userId) {
+        idValidator(userId);
         return get("", userId);
     }
 
     public ResponseEntity<Object> getAll(int from, int size, long userId) {
+        idValidator(userId);
+        pageValidator(from, size);
         Map<String, Object> parameters = Map.of("from", from, "size", size);
         return get("/all?from={from}&size={size}", userId, parameters);
     }
 
     public ResponseEntity<Object> getById(int requestId, int userId) {
+        idValidator(requestId);
+        idValidator(userId);
         return get("/" + requestId, userId);
     }
 }

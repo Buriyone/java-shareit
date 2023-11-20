@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Data;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.validation.Create;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -15,14 +14,14 @@ import javax.validation.constraints.NotNull;
 @Data
 @Builder(toBuilder = true)
 public class ItemDtoForRequest {
-    @NotNull(message = "Уникальный идентификатор не может отсутствовать.", groups = {Create.class})
+    @NotNull(message = "Уникальный идентификатор не может отсутствовать.")
     private int id;
-    @NotBlank(message = "Название вещи не может быть пустым или содержать пробелы.", groups = {Create.class})
+    @NotBlank(message = "Название вещи не может быть пустым или содержать пробелы.")
     private String name;
-    @NotBlank(message = "Описание вещи не может быть пустым или содержать пробелы.", groups = {Create.class})
+    @NotBlank(message = "Описание вещи не может быть пустым или содержать пробелы.")
     private String description;
-    @NotNull(message = "Статус не может отсутствовать.", groups = {Create.class})
+    @NotNull(message = "Статус не может отсутствовать.")
     private Boolean available;
-    @NotNull(message = "Уникальный идентификатор запроса не может отсутствовать.", groups = {Create.class})
+    @NotNull(message = "Уникальный идентификатор запроса не может отсутствовать.")
     private int requestId;
 }

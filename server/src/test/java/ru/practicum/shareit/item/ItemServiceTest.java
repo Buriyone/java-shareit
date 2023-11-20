@@ -119,14 +119,6 @@ public class ItemServiceTest {
         }
         try {
             itemDto = ItemDto.builder().name("name").description("description").available(true).build();
-            itemService.update(itemDto, 0, user.getId());
-        } catch (Exception e) {
-            assertEquals(ValidationException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Вещь не зарегистрирована.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
-        try {
-            itemDto = ItemDto.builder().name("name").description("description").available(true).build();
             itemService.update(itemDto, testItem.getId(), user2.getId());
         } catch (Exception e) {
             assertEquals(ForbiddenException.class, e.getClass(), "Тип ошибки отличается.");
@@ -208,20 +200,6 @@ public class ItemServiceTest {
     public void searchValidationTest() {
         itemService.add(itemDto, user.getId());
         try {
-            itemService.search("name", user2.getId(), -1, 20);
-        } catch (Exception e) {
-            assertEquals(ValidationException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Значение from не может быть отрицательным.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
-        try {
-            itemService.search("name", user2.getId(), 0, 0);
-        } catch (Exception e) {
-            assertEquals(ValidationException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Значение size не может быть меньше 1.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
-        try {
             itemService.search("name", 999, 0, 20);
         } catch (Exception e) {
             assertEquals(NotFoundException.class, e.getClass(), "Тип ошибки отличается.");
@@ -246,20 +224,6 @@ public class ItemServiceTest {
         } catch (Exception e) {
             assertEquals(NotFoundException.class, e.getClass(), "Тип ошибки отличается.");
             assertEquals("Пользователь c id: 999 не обнаружен.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
-        try {
-            itemService.getAll(user.getId(), -1, 20);
-        } catch (Exception e) {
-            assertEquals(ValidationException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Значение from не может быть отрицательным.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
-        try {
-            itemService.getAll(user.getId(), 0, 0);
-        } catch (Exception e) {
-            assertEquals(ValidationException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Значение size не может быть меньше 1.", e.getMessage(),
                     "Описание ошибки отличается");
         }
     }

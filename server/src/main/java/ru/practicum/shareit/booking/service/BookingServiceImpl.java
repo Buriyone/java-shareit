@@ -16,7 +16,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.model.NotFoundException;
-import ru.practicum.shareit.exception.model.StateException;
 import ru.practicum.shareit.exception.model.ValidationException;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.PageAppropriator.PageAppropriator.pageAppropriator;
-import static ru.practicum.shareit.validation.Validator.pageValidator;
 
 /**
  * Реализация интерфейса {@link BookingService}.
@@ -166,7 +164,6 @@ public class BookingServiceImpl implements BookingService {
     /**
      * Метод предоставления списка бронирований по параметру. По умолчанию предоставляет все вещи.
      * Генерирует {@link NotFoundException} если пользователь не был обнаружен.
-     * Генерирует {@link StateException} если был предан неподдерживаемый статус.
      * Возвращает результат постранично.
      * @param from индекс первого элемента.
      * @param size количество элементов для отображения.
@@ -181,32 +178,27 @@ public class BookingServiceImpl implements BookingService {
         if (!userService.userChecker(userId)) {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
         } else {
-            pageValidator(from, size);
             Pageable pageable = PageRequest.of(pageAppropriator(from, size), size,
                     Sort.by(Sort.Direction.DESC, "start"));
-            try {
-                LocalDateTime currentTime = LocalDateTime.now();
-                switch (State.valueOf(param)) {
-                    case CURRENT:
-                        return converter(bookingRepository.findBookingByBookerIdAndStartIsBeforeAndEndIsAfter(userId,
-                                currentTime, currentTime, pageable));
-                    case PAST:
-                        return converter(bookingRepository.findBookingByBookerIdAndEndIsBefore(userId,
-                                currentTime, pageable));
-                    case FUTURE:
-                        return converter(bookingRepository.findBookingByBookerIdAndStartIsAfter(userId,
-                                currentTime, pageable));
-                    case WAITING:
-                        return converter(bookingRepository.findBookingByBookerIdAndStatus(userId,
-                                Status.WAITING, pageable));
-                    case REJECTED:
-                        return converter(bookingRepository.findBookingByBookerIdAndStatus(userId,
-                                Status.REJECTED, pageable));
-                    default:
-                        return converter(bookingRepository.findBookingByBookerId(userId, pageable));
-                }
-            } catch (IllegalArgumentException e) {
-                throw new StateException("Unknown state: UNSUPPORTED_STATUS");
+            LocalDateTime currentTime = LocalDateTime.now();
+            switch (State.valueOf(param)) {
+                case CURRENT:
+                    return converter(bookingRepository.findBookingByBookerIdAndStartIsBeforeAndEndIsAfter(userId,
+                            currentTime, currentTime, pageable));
+                case PAST:
+                    return converter(bookingRepository.findBookingByBookerIdAndEndIsBefore(userId,
+                            currentTime, pageable));
+                case FUTURE:
+                    return converter(bookingRepository.findBookingByBookerIdAndStartIsAfter(userId,
+                            currentTime, pageable));
+                case WAITING:
+                    return converter(bookingRepository.findBookingByBookerIdAndStatus(userId,
+                            Status.WAITING, pageable));
+                case REJECTED:
+                    return converter(bookingRepository.findBookingByBookerIdAndStatus(userId,
+                            Status.REJECTED, pageable));
+                default:
+                    return converter(bookingRepository.findBookingByBookerId(userId, pageable));
             }
         }
     }
@@ -214,7 +206,6 @@ public class BookingServiceImpl implements BookingService {
     /**
      * Метод предоставления списка бронирований по параметру для владельца вещи. По умолчания предоставляет все вещи.
      * Генерирует {@link NotFoundException} если пользователь не был обнаружен.
-     * Генерирует {@link StateException} если был предан неподдерживаемый статус.
      * @param from индекс первого элемента.
      * @param size количество элементов для отображения.
      * @param param переданный параметр-статус.
@@ -228,32 +219,27 @@ public class BookingServiceImpl implements BookingService {
         if (!userService.userChecker(userId)) {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
         } else {
-            pageValidator(from, size);
             Pageable pageable = PageRequest.of(pageAppropriator(from, size), size,
                     Sort.by(Sort.Direction.DESC, "start"));
-            try {
-                LocalDateTime currentTime = LocalDateTime.now();
-                switch (State.valueOf(param)) {
-                    case CURRENT:
-                        return converter(bookingRepository.findBookingByItemOwnerIdAndStartIsBeforeAndEndIsAfter(userId,
-                                currentTime, currentTime, pageable));
-                    case PAST:
-                        return converter(bookingRepository.findBookingByItemOwnerIdAndEndIsBefore(userId,
-                                currentTime, pageable));
-                    case FUTURE:
-                        return converter(bookingRepository.findBookingByItemOwnerIdAndStartIsAfter(userId,
-                                currentTime, pageable));
-                    case WAITING:
-                        return converter(bookingRepository.findBookingByItemOwnerIdAndStatus(userId,
-                                Status.WAITING, pageable));
-                    case REJECTED:
-                        return converter(bookingRepository.findBookingByItemOwnerIdAndStatus(userId,
-                                Status.REJECTED, pageable));
-                    default:
-                        return converter(bookingRepository.findBookingByItemOwnerId(userId, pageable));
-                }
-            } catch (IllegalArgumentException e) {
-                throw new StateException("Unknown state: UNSUPPORTED_STATUS");
+            LocalDateTime currentTime = LocalDateTime.now();
+            switch (State.valueOf(param)) {
+                case CURRENT:
+                    return converter(bookingRepository.findBookingByItemOwnerIdAndStartIsBeforeAndEndIsAfter(userId,
+                            currentTime, currentTime, pageable));
+                case PAST:
+                    return converter(bookingRepository.findBookingByItemOwnerIdAndEndIsBefore(userId,
+                            currentTime, pageable));
+                case FUTURE:
+                    return converter(bookingRepository.findBookingByItemOwnerIdAndStartIsAfter(userId,
+                            currentTime, pageable));
+                case WAITING:
+                    return converter(bookingRepository.findBookingByItemOwnerIdAndStatus(userId,
+                            Status.WAITING, pageable));
+                case REJECTED:
+                    return converter(bookingRepository.findBookingByItemOwnerIdAndStatus(userId,
+                            Status.REJECTED, pageable));
+                default:
+                    return converter(bookingRepository.findBookingByItemOwnerId(userId, pageable));
             }
         }
     }

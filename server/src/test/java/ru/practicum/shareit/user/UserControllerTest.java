@@ -26,54 +26,6 @@ public class UserControllerTest {
     private final UserService userService;
 
     @Test
-    public void addValidationTest() throws Exception {
-        UserDto invalidUser = UserDto.builder().email("email@yandex.ru").build();
-        this.mockMvc.perform(post("/users")
-                        .content(new Gson().toJson(invalidUser))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidUser = UserDto.builder().name("").email("email@yandex.ru").build();
-        this.mockMvc.perform(post("/users")
-                        .content(new Gson().toJson(invalidUser))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidUser = UserDto.builder().name(" ").email("email@yandex.ru").build();
-        this.mockMvc.perform(post("/users")
-                        .content(new Gson().toJson(invalidUser))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        StringBuilder bigName = new StringBuilder();
-        for (int i = 0; i < 256; i++) {
-            bigName.append(i);
-        }
-        invalidUser = UserDto.builder().name(bigName.toString()).email("email@yandex.ru").build();
-        this.mockMvc.perform(post("/users")
-                        .content(new Gson().toJson(invalidUser))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidUser = UserDto.builder().name("name").build();
-        this.mockMvc.perform(post("/users")
-                        .content(new Gson().toJson(invalidUser))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidUser = UserDto.builder().name("name").email("").build();
-        this.mockMvc.perform(post("/users")
-                        .content(new Gson().toJson(invalidUser))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidUser = UserDto.builder().name("name").email(" ").build();
-        this.mockMvc.perform(post("/users")
-                        .content(new Gson().toJson(invalidUser))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-        invalidUser = UserDto.builder().name("name").email("emailYandex@.ru").build();
-        this.mockMvc.perform(post("/users")
-                        .content(new Gson().toJson(invalidUser))
-                        .contentType(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     public void addTest() throws Exception {
         when(userService.add(any()))
                 .thenReturn(UserDto.builder().id(1).name("name").email("email@yandex.ru").build());
@@ -89,11 +41,6 @@ public class UserControllerTest {
 
     @Test
     public void updateValidationTest() throws Exception {
-        this.mockMvc.perform(patch("/users/{userId}", 1)
-                        .content(new Gson().toJson(UserDto.builder().name("name").email("emailYandex@.ru").build()))
-                        .contentType(MEDIA_TYPE)
-                        .accept(MEDIA_TYPE))
-                .andExpect(status().isBadRequest());
         this.mockMvc.perform(patch("/users/{userId}", "imposter")
                         .content(new Gson().toJson(UserDto.builder().name("name").email("email@Yandex.ru").build()))
                         .contentType(MEDIA_TYPE)

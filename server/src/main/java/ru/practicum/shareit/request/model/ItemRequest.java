@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 /**
@@ -28,6 +29,7 @@ public class ItemRequest {
     /**
      * Текст запроса, содержащий описание требуемой вещи.
      */
+    @NotBlank(message = "текст запроса не может отсутствовать.")
     private String description;
     /**
      * Пользователь, создавший запрос.

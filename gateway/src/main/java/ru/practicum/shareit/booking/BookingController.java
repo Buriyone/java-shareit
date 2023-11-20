@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.validation.Create;
 
+import static ru.practicum.shareit.item.ItemController.USER_ID;
+
 @Controller
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
@@ -19,10 +21,6 @@ public class BookingController {
      * Предоставляет доступ к сервису бронирований.
      */
     private final BookingClient bookingClient;
-    /**
-     * Константа заголовка.
-     */
-    private static final String USER_ID = "X-Sharer-User-Id";
 
     /**
      * Обрабатывает запрос на регистрацию бронирования.
@@ -63,8 +61,8 @@ public class BookingController {
     @GetMapping
     private ResponseEntity<Object> getAll(@RequestParam(defaultValue = "ALL") String state,
                                           @RequestHeader(USER_ID) long userId,
-                                          @RequestParam (defaultValue = "0") int from,
-                                          @RequestParam (defaultValue = "20") int size) {
+                                          @RequestParam(defaultValue = "0") int from,
+                                          @RequestParam(defaultValue = "20") int size) {
         log.info("Поступил запрос на предоставление списка бронирований.");
         return bookingClient.getAll(state, userId, from, size);
     }
@@ -75,8 +73,8 @@ public class BookingController {
     @GetMapping("/owner")
     private ResponseEntity<Object> getByUser(@RequestParam(defaultValue = "ALL") String state,
                                              @RequestHeader(USER_ID) int userId,
-                                             @RequestParam (defaultValue = "0") int from,
-                                             @RequestParam (defaultValue = "20") int size) {
+                                             @RequestParam(defaultValue = "0") int from,
+                                             @RequestParam(defaultValue = "20") int size) {
         log.info("Поступил запрос на предоставление списка бронирований для владельца.");
         return bookingClient.getByUser(state, userId, from, size);
     }

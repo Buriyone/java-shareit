@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.PageAppropriator.PageAppropriator.pageAppropriator;
-import static ru.practicum.shareit.validation.Validator.pageValidator;
 
 /**
  * Реализация сервиса {@link ItemService}.
@@ -119,8 +118,6 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("Некорректно указаны данные.");
         } else if (userService.userChecker(userId).equals(false)) {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
-        } else if (itemId == 0) {
-            throw new ValidationException("Вещь не зарегистрирована.");
         }
         return itemRepository.findById(itemId).stream()
                 .peek(item -> {
@@ -192,7 +189,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDtoIncreasedConfidential> search(String text, int userId, int from, int size) {
         log.info("Поступил запрос на поиск вещей по запросу пользователем с id: {}.", userId);
-        pageValidator(from, size);
         if (!userService.userChecker(userId)) {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
         }
@@ -219,7 +215,6 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public List<ItemDtoIncreasedConfidential> getAll(int userId, int from, int size) {
         log.info("Поступил запрос на предоставление вещей пользователя с id: {}.", userId);
-        pageValidator(from, size);
         if (!userService.userChecker(userId)) {
             throw new NotFoundException(String.format("Пользователь c id: %d не обнаружен.", userId));
         }

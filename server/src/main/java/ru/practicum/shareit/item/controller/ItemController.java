@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -10,8 +9,6 @@ import ru.practicum.shareit.item.dto.ItemDtoIncreasedConfidential;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.dto.CommentDtoIncreasedConfidential;
-import ru.practicum.shareit.validation.Create;
-import ru.practicum.shareit.validation.Update;
 
 import java.util.List;
 
@@ -29,15 +26,14 @@ public class ItemController {
     /**
      * Константа заголовка.
      */
-    private static final String USER_ID = "X-Sharer-User-Id";
+    public static final String USER_ID = "X-Sharer-User-Id";
 
     /**
      * Обрабатывает запрос на регистрацию и добавление.
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ItemDtoIncreasedConfidential add(@Validated(Create.class)
-                                            @RequestBody ItemDto itemDto,
+    public ItemDtoIncreasedConfidential add(@RequestBody ItemDto itemDto,
                                             @RequestHeader(USER_ID) int userId) {
         return itemService.add(itemDto, userId);
     }
@@ -46,8 +42,7 @@ public class ItemController {
      * Обрабатывает запрос на обновление данных.
      */
     @PatchMapping("/{itemId}")
-    public ItemDtoIncreasedConfidential update(@Validated(Update.class)
-                                               @RequestBody ItemDto itemDto,
+    public ItemDtoIncreasedConfidential update(@RequestBody ItemDto itemDto,
                                                @PathVariable int itemId,
                                                @RequestHeader(USER_ID) int userId) {
         return itemService.update(itemDto, itemId, userId);
@@ -68,8 +63,8 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDtoIncreasedConfidential> search(@RequestParam String text,
                                                      @RequestHeader(USER_ID) int userId,
-                                                     @RequestParam (defaultValue = "0") int from,
-                                                     @RequestParam (defaultValue = "20") int size) {
+                                                     @RequestParam int from,
+                                                     @RequestParam int size) {
         return itemService.search(text, userId, from, size);
     }
 
@@ -78,8 +73,8 @@ public class ItemController {
      */
     @GetMapping
     public List<ItemDtoIncreasedConfidential> getAll(@RequestHeader(USER_ID) int userId,
-                                                     @RequestParam (defaultValue = "0") int from,
-                                                     @RequestParam (defaultValue = "20") int size) {
+                                                     @RequestParam int from,
+                                                     @RequestParam int size) {
         return itemService.getAll(userId, from, size);
     }
 
@@ -87,8 +82,7 @@ public class ItemController {
      * Обрабатывает запросы на создание комментария.
      */
     @PostMapping("/{itemId}/comment")
-    public CommentDtoIncreasedConfidential addComment(@Validated(Create.class)
-                                                      @RequestBody CommentDto commentDto,
+    public CommentDtoIncreasedConfidential addComment(@RequestBody CommentDto commentDto,
                                                       @PathVariable int itemId,
                                                       @RequestHeader(USER_ID) int userId) {
         return itemService.addComment(itemId, userId, commentDto);

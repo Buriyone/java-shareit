@@ -13,6 +13,9 @@ import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.util.Map;
 
+import static ru.practicum.shareit.validation.Validator.idValidator;
+import static ru.practicum.shareit.validation.Validator.pageValidator;
+
 @Service
 public class ItemClient extends BaseClient {
     private static final String API_PREFIX = "/items";
@@ -26,28 +29,39 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> add(ItemDto itemDto, int userId) {
+        idValidator(userId);
         return post("", userId, itemDto);
     }
 
     public ResponseEntity<Object> update(ItemDto itemDto, int itemId, int userId) {
+        idValidator(itemId);
+        idValidator(userId);
         return patch("/" + itemId, userId, itemDto);
     }
 
     public ResponseEntity<Object> getById(int itemId, int userId) {
+        idValidator(itemId);
+        idValidator(userId);
         return get("/" + itemId, userId);
     }
 
     public ResponseEntity<Object> search(String text, long userId, int from, int size) {
+        idValidator(userId);
+        pageValidator(from, size);
         Map<String, Object> parameters = Map.of("text", text, "from", from, "size", size);
         return get("/search?text={text}&from={from}&size={size}", userId, parameters);
     }
 
     public ResponseEntity<Object> getAll(long userId, int from, int size) {
+        idValidator(userId);
+        pageValidator(from, size);
         Map<String, Object> parameters = Map.of("from", from, "size", size);
         return get("/?from={from}&size={size}", userId, parameters);
     }
 
     public ResponseEntity<Object> addComment(int itemId, int userId, CommentDto commentDto) {
+        idValidator(itemId);
+        idValidator(userId);
         return post("/" + itemId + "/comment", userId, commentDto);
     }
 }

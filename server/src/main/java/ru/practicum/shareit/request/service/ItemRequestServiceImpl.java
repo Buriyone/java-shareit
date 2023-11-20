@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.PageAppropriator.PageAppropriator.pageAppropriator;
-import static ru.practicum.shareit.validation.Validator.pageValidator;
 
 /**
  * Реализация сервиса {@link ItemRequestService}.
@@ -116,7 +115,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         if (!userService.userChecker(userId)) {
             throw new NotFoundException(String.format("Пользователь с id: %d не найден.", userId));
         }
-        pageValidator(from, size);
         return itemRequestRepository.findAllByRequestorIdNot(userId, PageRequest.of(pageAppropriator(from, size), size,
                         Sort.by(Sort.Direction.DESC, "created")))
                 .stream()

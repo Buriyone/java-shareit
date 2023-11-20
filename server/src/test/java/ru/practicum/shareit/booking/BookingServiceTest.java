@@ -10,7 +10,6 @@ import ru.practicum.shareit.booking.assistant.Status;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.exception.model.NotFoundException;
-import ru.practicum.shareit.exception.model.StateException;
 import ru.practicum.shareit.exception.model.ValidationException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -262,27 +261,6 @@ public class BookingServiceTest {
             assertEquals("Пользователь c id: 999 не обнаружен.", e.getMessage(),
                     "Описание ошибки отличается");
         }
-        try {
-            bookingService.getAll("ALL", user2.getId(), -1, 20);
-        } catch (Exception e) {
-            assertEquals(ValidationException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Значение from не может быть отрицательным.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
-        try {
-            bookingService.getAll("ALL", user2.getId(), 0, 0);
-        } catch (Exception e) {
-            assertEquals(ValidationException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Значение size не может быть меньше 1.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
-        try {
-            bookingService.getAll("imposter", user2.getId(), 0, 20);
-        } catch (Exception e) {
-            assertEquals(StateException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Unknown state: UNSUPPORTED_STATUS", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
     }
 
     @Test
@@ -389,27 +367,6 @@ public class BookingServiceTest {
         } catch (Exception e) {
             assertEquals(NotFoundException.class, e.getClass(), "Тип ошибки отличается.");
             assertEquals("Пользователь c id: 999 не обнаружен.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
-        try {
-            bookingService.getByUser("ALL", user2.getId(), -1, 20);
-        } catch (Exception e) {
-            assertEquals(ValidationException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Значение from не может быть отрицательным.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
-        try {
-            bookingService.getByUser("ALL", user2.getId(), 0, 0);
-        } catch (Exception e) {
-            assertEquals(ValidationException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Значение size не может быть меньше 1.", e.getMessage(),
-                    "Описание ошибки отличается");
-        }
-        try {
-            bookingService.getByUser("imposter", user2.getId(), 0, 20);
-        } catch (Exception e) {
-            assertEquals(StateException.class, e.getClass(), "Тип ошибки отличается.");
-            assertEquals("Unknown state: UNSUPPORTED_STATUS", e.getMessage(),
                     "Описание ошибки отличается");
         }
     }

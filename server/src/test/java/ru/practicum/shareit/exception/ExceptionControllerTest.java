@@ -8,10 +8,13 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoIncreasedConfidential;
 import ru.practicum.shareit.user.dto.UserDto;
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -41,14 +44,17 @@ public class ExceptionControllerTest {
 
     @Test
     public void validationExceptionTest() throws Exception {
-        this.mockMvc.perform(get("/items?from=-1")
+        ItemDto invalidItemDto = ItemDto.builder().name(" ").build();
+        this.mockMvc.perform(patch("/items/1")
                         .header(USER_ID, 1)
-                        .accept(MEDIA_TYPE))
+                        .contentType(MEDIA_TYPE)
+                        .accept(MEDIA_TYPE)
+                        .content(gson.toJson(invalidItemDto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.actionError")
                         .value("Ошибка валидации."))
                 .andExpect(jsonPath("$.description")
-                        .value("Значение from не может быть отрицательным."));
+                        .value("Некорректно указаны данные."));
     }
 
     @Test
@@ -117,24 +123,5 @@ public class ExceptionControllerTest {
                         .value("В доступе отказано."))
                 .andExpect(jsonPath("$.description")
                         .value(message));
-    }
-
-    @Test
-    public void stateExceptionTest() throws Exception {
-        UserDto user = gson.fromJson(this.mockMvc.perform(post("/users")
-                        .contentType(MEDIA_TYPE)
-                        .content(gson.toJson(UserDto.builder()
-                                .name("user")
-                                .email("email@yandex.ru")
-                                .build())))
-                .andReturn()
-                .getResponse()
-                .getContentAsString(), UserDto.class);
-        this.mockMvc.perform(get("/bookings?state=imposter")
-                        .header(USER_ID, user.getId())
-                        .accept(MEDIA_TYPE))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error")
-                        .value("Unknown state: UNSUPPORTED_STATUS"));
     }
 }

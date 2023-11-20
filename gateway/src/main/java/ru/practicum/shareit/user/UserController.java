@@ -51,23 +51,26 @@ public class UserController {
     public ResponseEntity<Object> update(@Validated(Update.class)
                                          @RequestBody UserRequestDto userRequestDto,
                                          @PathVariable int userId) {
+        log.info("Получен запрос на обновление данных пользователя.");
         return userClient.update(userId, userRequestDto);
     }
 
     /**
-     * Обрабатывает запросы удаления пользователя.
+     * Обрабатывает запросы на удаление пользователя.
      */
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable int userId) {
+        log.info("Получен запрос на удаление пользователя.");
         userClient.delete(userId);
     }
 
     /**
-     * Обрабатывает запросы предоставления пользователя по уникальному идентификатору.
+     * Обрабатывает запросы на предоставление пользователя по уникальному идентификатору.
      */
     @GetMapping("/{userId}")
     public ResponseEntity<Object> get(@PathVariable int userId) {
+        log.info("Получен запрос на предоставление пользователя по уникальному идентификатору.");
         return userClient.get(userId);
     }
 }
